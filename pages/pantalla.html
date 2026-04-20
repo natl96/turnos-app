@@ -12,159 +12,40 @@
     --panel: #0d1117;
     --border: #1a1f2e;
     --accent: #00d4aa;
-    --red: #ff4b5c;
     --gold: #ffb347;
-    --blue: #4da6ff;
     --text: #e8eaf0;
     --muted: #4a5068;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; margin: 0; }
   body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
     overflow: hidden;
-    position: relative;
+    margin: 0;
   }
-
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse at 10% 90%, rgba(0,212,170,.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 10%, rgba(77,166,255,.05) 0%, transparent 40%);
-    pointer-events: none;
-  }
-
-  body::after {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-
   .screen-wrap {
-    position: relative; z-index: 1;
     height: 100vh;
     display: grid;
     grid-template-rows: auto 1fr auto;
     padding: 2rem;
     gap: 1.5rem;
   }
-
-  .top-bar {
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.3rem; font-weight: 800;
-    letter-spacing: -0.5px;
-  }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
   .logo span { color: var(--accent); }
-  .clock {
-    font-size: 2.2rem; font-weight: 500;
-    color: var(--accent); letter-spacing: .05em;
-  }
-  .date-str { 
-    font-size: .78rem; color: var(--muted); 
-    text-align: right; margin-top: .1rem; 
-  }
-
-  .main-area {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 1.5rem;
-    min-height: 0;
-  }
-
-  .called-panel {
-    display: flex; flex-direction: column; gap: 1rem;
-    min-height: 0;
-  }
-  .called-label {
-    font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: .25rem;
-  }
-  .called-list {
-    flex: 1; display: flex; flex-direction: column; gap: .75rem;
-    overflow-y: auto;
-  }
-
+  .clock { font-size: 2.3rem; color: var(--accent); }
+  .main-area { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+  .called-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem; }
   .called-item {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.25rem 1.75rem;
-    display: flex; align-items: center; gap: 1.5rem;
-    position: relative; overflow: hidden;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.3rem 1.8rem; display: flex; gap: 1.5rem;
   }
-  .called-item.new {
-    border-color: var(--accent);
-    box-shadow: 0 0 30px rgba(0,212,170,.25);
-    animation: pulse 2s ease;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(0,212,170,.6); }
-    70% { box-shadow: 0 0 0 15px rgba(0,212,170,0); }
-  }
-  .called-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 2.6rem; font-weight: 800;
-    line-height: 1; letter-spacing: -2px;
-    color: var(--accent);
-    min-width: 130px;
-  }
-  .called-info { flex: 1; }
-  .called-srv { font-size: .82rem; color: var(--muted); margin-bottom: .2rem; }
-  .called-name { font-size: 1.05rem; font-weight: 500; }
-  .called-modulo {
-    font-size: .75rem; color: var(--muted);
-    display: flex; align-items: center; gap: .4rem;
-  }
-
-  .no-calls {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    color: var(--muted); text-align: center; gap: 1rem;
-  }
-  .no-calls-icon { font-size: 3.5rem; opacity: .3; }
-
-  .right-panel {
-    display: flex; flex-direction: column; gap: 1rem;
-  }
-  .info-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.5rem;
-  }
-  .ic-label {
-    font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: .8rem;
-  }
-  .total-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 3.8rem; font-weight: 800;
-    color: var(--gold); letter-spacing: -3px;
-  }
-
-  .bottom-bar {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: .8rem;
-  }
-
+  .called-num { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800; color: var(--accent); min-width: 140px; }
+  .info-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .total-num { font-family: 'Syne', sans-serif; font-size: 4rem; font-weight: 800; color: var(--gold); }
   .flash {
     position: fixed; inset: 0; z-index: 50;
-    background: rgba(0,212,170,.08);
-    pointer-events: none; opacity: 0;
+    background: rgba(0,212,170,.12); pointer-events: none; opacity: 0;
     transition: opacity .2s;
   }
   .flash.show { opacity: 1; }
@@ -175,68 +56,47 @@
 <div class="flash" id="flash"></div>
 
 <div class="screen-wrap">
-  <!-- TOP -->
   <div class="top-bar">
-    <div>
-      <div class="logo">Turno<span>Flow</span></div>
-      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.2rem">
-        PANTALLA DE ESPERA
-      </div>
-    </div>
+    <div><div class="logo">Turno<span>Flow</span></div></div>
     <div>
       <div class="clock" id="clock">00:00</div>
-      <div class="date-str" id="date-str">—</div>
+      <div id="date-str" style="font-size:0.8rem;color:var(--muted);text-align:right"></div>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main-area">
-    <!-- LLAMADOS -->
-    <div class="called-panel">
-      <div class="called-label">ÚLTIMOS TURNOS LLAMADOS</div>
-      <div class="called-list" id="called-list">
-        <div class="no-calls">
-          <div class="no-calls-icon">🎫</div>
-          <p>Los turnos llamados aparecerán aquí</p>
-        </div>
-      </div>
+    <div>
+      <div style="font-size:0.7rem;letter-spacing:1px;color:var(--muted);margin-bottom:8px">ÚLTIMOS TURNOS LLAMADOS</div>
+      <div class="called-list" id="called-list"></div>
     </div>
 
-    <!-- INFO DERECHA -->
-    <div class="right-panel">
+    <div>
       <div class="info-card">
-        <div class="ic-label">TOTAL EN ESPERA</div>
+        <div style="font-size:0.7rem;letter-spacing:1px;color:var(--muted)">TOTAL EN ESPERA</div>
         <div class="total-num" id="total-espera">0</div>
-        <div style="font-size:.85rem;color:var(--muted);margin-top:8px">personas en cola</div>
       </div>
-
-      <div class="info-card" style="flex:1">
-        <div class="ic-label">COLA POR SERVICIO</div>
-        <div class="srv-list" id="srv-list">
-          <!-- Se llena con JavaScript -->
-        </div>
+      <div class="info-card" style="margin-top:1rem">
+        <div style="font-size:0.7rem;letter-spacing:1px;color:var(--muted);margin-bottom:10px">COLA POR SERVICIO</div>
+        <div id="srv-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM -->
-  <div class="bottom-bar">
-    <div>TurnoFlow • Sistema Omnicanal</div>
-    <div id="conn-status" style="color:var(--accent)">● En vivo</div>
-    <a href="/pages/cliente.html" style="color:var(--accent);text-decoration:none">Solicitar turno →</a>
+  <div style="text-align:center;font-size:0.85rem;color:var(--muted)">
+    TurnoFlow • Actualización en tiempo real
   </div>
 </div>
 
 <script>
 const socket = io();
 
+console.log("Pantalla de espera cargada - esperando conexión...");
+
 // ====================== RELOJ ======================
 function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = 
-    now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('date-str').textContent = 
-    now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('clock').textContent = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('date-str').textContent = now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 updateClock();
 setInterval(updateClock, 1000);
@@ -245,107 +105,106 @@ setInterval(updateClock, 1000);
 function renderLlamados(llamados) {
   const container = document.getElementById('called-list');
   if (!llamados || llamados.length === 0) {
-    container.innerHTML = `
-      <div class="no-calls">
-        <div class="no-calls-icon">🎫</div>
-        <p>Los turnos llamados aparecerán aquí</p>
-      </div>`;
+    container.innerHTML = `<div style="text-align:center;color:#666;padding:3rem">No hay turnos llamados aún</div>`;
     return;
   }
-
-  container.innerHTML = llamados.slice(0, 6).map((t, i) => `
-    <div class="called-item ${i === 0 ? 'new' : ''}">
+  container.innerHTML = llamados.slice(0, 6).map(t => `
+    <div class="called-item">
       <div class="called-num">${t.id || t.codigo}</div>
-      <div class="called-info">
-        <div class="called-srv">${t.serviceName || t.servicioNombre || '—'}</div>
-        <div class="called-name">${t.nombre || 'Cliente'}</div>
-        <div class="called-modulo">Módulo ${t.modulo || '01'}</div>
+      <div>
+        <div style="font-size:0.9rem">${t.serviceName || t.servicioNombre || 'Servicio'}</div>
+        <div style="color:#aaa;font-size:0.8rem">Módulo ${t.modulo || '01'}</div>
       </div>
-      <div class="called-hora">${t.hora || new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}</div>
     </div>
   `).join('');
 }
 
 function renderServicios(servicios) {
   const container = document.getElementById('srv-list');
-  if (!servicios || servicios.length === 0) {
-    container.innerHTML = '<div style="color:#666">Sin servicios activos</div>';
-    return;
-  }
-  container.innerHTML = servicios.map(s => `
-    <div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>${s.name || s.nombre}</span>
-        <span style="font-weight:700;color:var(--accent)">${s.enEspera || s.esperando || 0}</span>
-      </div>
+  container.innerHTML = (servicios || []).map(s => `
+    <div style="margin:8px 0;display:flex;justify-content:space-between">
+      <span>${s.name || s.nombre}</span>
+      <span style="font-weight:700;color:var(--accent)">${s.enEspera || s.esperando || 0}</span>
     </div>
   `).join('');
 }
 
-// ====================== EFECTOS ======================
+// Flash y sonido
 function flashScreen() {
-  const flash = document.getElementById('flash');
-  flash.classList.add('show');
-  setTimeout(() => flash.classList.remove('show'), 400);
+  const f = document.getElementById('flash');
+  f.classList.add('show');
+  setTimeout(() => f.classList.remove('show'), 600);
 }
 
 function playChime() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [659, 784, 880];
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.value = 0.25;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.12);
-      osc.stop(ctx.currentTime + i * 0.12 + 0.25);
+    [659, 784, 880].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = freq;
+      g.gain.value = 0.25;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.1);
+      o.stop(ctx.currentTime + i * 0.1 + 0.25);
     });
   } catch(e) {}
 }
 
-// ====================== SOCKET ======================
+// ====================== SOCKET.IO ======================
 socket.on('connect', () => {
-  console.log("✅ Pantalla conectada");
+  console.log("✅ Socket.IO conectado correctamente");
+});
+
+socket.on('disconnect', () => {
+  console.log("❌ Socket.IO desconectado");
 });
 
 socket.on('estado', (data) => {
+  console.log("📡 Recibido estado:", data);
   document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
   renderServicios(data.servicios || data.services || []);
+  renderLlamados(data.ultimosLlamados || []);
 });
 
-socket.on('nuevo-turno', () => {
-  // Actualizar cuando se crea un ticket nuevo desde cliente
+socket.on('nuevo-turno', (data) => {
+  console.log("📨 Nuevo turno creado:", data);
+  flashScreen();
+  fetch('/api/estado').then(r => r.json()).then(d => {
+    document.getElementById('total-espera').textContent = d.totalEsperando || 0;
+    renderServicios(d.servicios || []);
+  });
+});
+
+socket.on('turno-llamado', (data) => {
+  console.log("🛎️ Turno llamado:", data);
+  flashScreen();
+  playChime();
+  fetch('/api/estado').then(r => r.json()).then(d => renderLlamados(d.ultimosLlamados || []));
+});
+
+// ====================== RESPALDO ======================
+setInterval(() => {
   fetch('/api/estado')
     .then(r => r.json())
     .then(data => {
       document.getElementById('total-espera').textContent = data.totalEsperando || 0;
       renderServicios(data.servicios || []);
-    });
-});
-
-socket.on('turno-llamado', (data) => {
-  flashScreen();
-  playChime();
-  fetch('/api/estado')
-    .then(r => r.json())
-    .then(data => {
       renderLlamados(data.ultimosLlamados || []);
-    });
-});
+    })
+    .catch(() => console.log("Error en respaldo"));
+}, 5000);
 
-// ====================== CARGA INICIAL ======================
+// Carga inicial
 fetch('/api/estado')
   .then(r => r.json())
   .then(data => {
-    document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
-    renderServicios(data.servicios || data.services || []);
+    console.log("📥 Datos iniciales recibidos:", data);
+    document.getElementById('total-espera').textContent = data.totalEsperando || 0;
+    renderServicios(data.servicios || []);
     renderLlamados(data.ultimosLlamados || []);
   })
-  .catch(err => console.log("Error carga inicial:", err));
+  .catch(err => console.error("Error carga inicial:", err));
 </script>
 </body>
 </html>
