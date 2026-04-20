@@ -3,276 +3,273 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Turnos PRO</title>
+  <title>Turnos PRO | Santander</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    * { font-family: 'Archivo', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
     
-    .ticket-number {
-      font-size: 6.5rem;
-      line-height: 1;
-      font-weight: 700;
-      letter-spacing: -8px;
-      color: #1e40af;
+    :root {
+      --primary: #EC0000;
+      --primary-dark: #C00000;
+      --secondary: #0057B8;
+      --accent: #00B140;
+      --dark: #0A1428;
+      --light: #F5F5F5;
     }
-    
+
+    body {
+      background: linear-gradient(135deg, var(--dark) 0%, #1A2337 100%);
+      min-height: 100vh;
+      overflow-y: auto; /* ← FIX: permite scroll con rueda del ratón */
+    }
+
     .service-card {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      border: 3px solid transparent;
     }
+
     .service-card:hover {
-      transform: translateY(-12px);
-      box-shadow: 0 30px 60px -15px rgb(30 64 175);
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px -12px rgba(236, 0, 0, 0.4);
     }
+
     .service-card.active {
-      border: 4px solid #1e40af;
-      box-shadow: 0 0 0 6px rgba(30, 64, 175, 0.3);
+      border-color: #0057B8;
+      box-shadow: 0 0 0 6px rgba(0, 87, 184, 0.3);
     }
-    
-    .modal-ticket {
-      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
     }
-    
+
+    .service-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .ticket-number {
+      font-size: 5.5rem;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -6px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-overlay {
+      backdrop-filter: blur(12px);
+    }
+
     @keyframes popIn {
-      0% { transform: scale(0.8); opacity: 0; }
+      0% { transform: scale(0.85); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-    
-    .high-contrast {
-      filter: contrast(1.15) brightness(1.1);
+
+    .modal-content {
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(236, 0, 0, 0.15);
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-blue-950 via-slate-900 to-gray-900 text-white min-h-screen overflow-hidden high-contrast">
-  <!-- HEADER - Profesional, accesible y con cambio de idioma -->
-  <div class="bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+<body class="text-white">
+  
+  <!-- HEADER - Exacto al screenshot -->
+  <header class="glass border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-inner">📋</div>
+        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-4xl shadow-inner">📋</div>
         <div>
-          <h1 class="text-4xl font-bold tracking-tighter" data-i18n="title">Turnos PRO</h1>
-          <p class="text-blue-200 text-sm" data-i18n="subtitle">Gestión omnicanal de turnos</p>
+          <h1 class="text-4xl font-bold tracking-tighter">Turnos PRO</h1>
+          <p class="text-blue-200 text-sm">Gestión omnicanal de turnos</p>
         </div>
       </div>
 
-      <!-- Cambio de idioma (REQ-09) -->
-      <div class="flex items-center gap-2 bg-white/10 rounded-3xl p-1">
+      <!-- Idioma (REQ-09) -->
+      <div class="flex bg-white/10 rounded-3xl p-1">
         <button onclick="switchLanguage('es')" id="lang-es"
-                class="px-6 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all active:scale-95">
-          🇨🇴 ES
-        </button>
+                class="px-8 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all">🇨🇴 ES</button>
         <button onclick="switchLanguage('en')" id="lang-en"
-                class="px-6 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all active:scale-95">
-          🇬🇧 EN
-        </button>
+                class="px-8 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all">🇬🇧 EN</button>
       </div>
 
       <a href="/login" 
-         class="flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition-all shadow-lg text-lg">
-        <i class="fa-solid fa-right-to-bracket"></i>
-        <span data-i18n="login">Iniciar sesión (Asesor / Admin)</span>
+         class="inline-flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition-all shadow-lg">
+        <i class="fa-solid fa-right-to-bracket text-xl"></i>
+        Iniciar sesión (Asesor / Admin)
       </a>
     </div>
-  </div>
+  </header>
 
-  <div class="max-w-7xl mx-auto px-8 py-10">
+  <main class="max-w-7xl mx-auto px-8 py-12">
+    
+    <!-- HERO -->
     <div class="text-center mb-12">
-      <h2 class="text-5xl font-bold mb-3" data-i18n="hero">¿Qué servicio necesitas hoy?</h2>
-      <p class="text-blue-200 text-2xl" data-i18n="hero-sub">Selecciona y obtén tu turno en segundos</p>
+      <h2 class="text-5xl font-bold mb-3" id="hero-title">¿Qué servicio necesitas hoy?</h2>
+      <p class="text-xl text-blue-200" id="hero-subtitle">Selecciona y obtén tu turno en segundos</p>
     </div>
 
-    <!-- SERVICIOS - REQ-01 -->
+    <!-- SERVICIOS (REQ-01) - Diseño idéntico al screenshot -->
     <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"></div>
 
-    <!-- PANEL DE GENERACIÓN (aparece al seleccionar) -->
-    <div id="generation-panel" class="hidden bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-2xl mx-auto border border-white/20">
+    <!-- PANEL GENERACIÓN (aparece al seleccionar) -->
+    <div id="generation-panel" class="hidden glass rounded-3xl p-8 max-w-2xl mx-auto">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-3xl font-semibold" data-i18n="selected-service">Servicio seleccionado:</h3>
-        <div id="selected-service-name" class="text-2xl font-bold text-emerald-400"></div>
+        <h3 class="text-2xl font-semibold" id="selected-label">Servicio seleccionado:</h3>
+        <div id="selected-service-name" class="text-3xl font-bold text-blue-400"></div>
       </div>
 
-      <!-- Tipo de ticket - REQ-02 -->
+      <!-- Elección impreso / digital (REQ-02) -->
       <div class="flex gap-4 mb-8">
         <label onclick="selectDelivery('impreso')" id="label-impreso"
-               class="flex-1 cursor-pointer bg-white/10 hover:bg-white/20 rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent transition-all">
-          <i class="fa-solid fa-print text-4xl"></i>
+               class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent hover:border-white/30 transition-all">
+          <i class="fa-solid fa-print text-4xl text-red-400"></i>
           <div>
-            <p class="font-semibold text-xl" data-i18n="physical">Ticket impreso</p>
-            <p class="text-sm text-white/70" data-i18n="physical-desc">Se imprime en el kiosco</p>
+            <p class="font-semibold text-xl" id="physical-text">Ticket impreso</p>
+            <p class="text-sm text-white/70" id="physical-desc">Se imprime en el kiosco</p>
           </div>
         </label>
         
         <label onclick="selectDelivery('digital')" id="label-digital"
-               class="flex-1 cursor-pointer bg-white/10 hover:bg-white/20 rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent transition-all">
-          <i class="fa-solid fa-mobile-screen-button text-4xl"></i>
+               class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent hover:border-white/30 transition-all">
+          <i class="fa-solid fa-mobile-screen-button text-4xl text-emerald-400"></i>
           <div>
-            <p class="font-semibold text-xl" data-i18n="digital">Ticket digital</p>
-            <p class="text-sm text-white/70" data-i18n="digital-desc">Recibe por WhatsApp / Email</p>
+            <p class="font-semibold text-xl" id="digital-text">Ticket digital</p>
+            <p class="text-sm text-white/70" id="digital-desc">Por WhatsApp / Email</p>
           </div>
         </label>
       </div>
 
-      <!-- Datos para digital - REQ-10 -->
+      <!-- Campos digitales (REQ-10) -->
       <div id="digital-fields" class="hidden space-y-6">
         <div>
-          <label class="block text-sm mb-2 text-white/70" data-i18n="phone-label">Teléfono (obligatorio para digital)</label>
-          <input type="tel" id="phone" placeholder="+57 300 123 4567"
-                 class="w-full bg-white/10 border border-white/30 focus:border-emerald-400 rounded-3xl px-6 py-6 text-xl outline-none">
+          <label class="block text-sm mb-2 text-white/70" id="phone-label">Teléfono <span class="text-red-400">*</span></label>
+          <input type="tel" id="phone" placeholder="300 123 4567"
+                 class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
         </div>
         <div>
-          <label class="block text-sm mb-2 text-white/70" data-i18n="email-label">Correo electrónico (opcional)</label>
+          <label class="block text-sm mb-2 text-white/70" id="email-label">Correo electrónico (opcional)</label>
           <input type="email" id="email" placeholder="tu@email.com"
-                 class="w-full bg-white/10 border border-white/30 focus:border-emerald-400 rounded-3xl px-6 py-6 text-xl outline-none">
+                 class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
         </div>
       </div>
 
       <button onclick="generateTicket()" 
-              class="w-full mt-6 py-8 bg-emerald-500 hover:bg-emerald-600 text-3xl font-semibold rounded-3xl transition-all active:scale-95 flex items-center justify-center gap-4">
+              class="w-full mt-4 py-7 bg-red-600 hover:bg-red-700 text-2xl font-semibold rounded-3xl transition-all flex items-center justify-center gap-3">
         <i class="fa-solid fa-ticket"></i>
-        <span data-i18n="generate-btn">Generar turno</span>
+        <span id="generate-btn">Generar turno</span>
       </button>
     </div>
-  </div>
+  </main>
 
-  <!-- MODAL TICKET PROFESIONAL (inspirado en Frontend Mentor + kioscos reales) -->
-  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100]">
-    <div class="modal-ticket bg-white text-gray-900 rounded-3xl max-w-2xl w-full mx-4 overflow-hidden shadow-2xl">
-      <div class="p-12 text-center">
-        <div class="flex justify-center mb-6">
-          <div class="px-6 py-2 bg-emerald-100 text-emerald-700 rounded-3xl text-lg font-semibold flex items-center gap-2">
-            <i class="fa-solid fa-check-circle"></i>
-            <span data-i18n="ticket-ready">¡Tu turno ha sido generado!</span>
-          </div>
-        </div>
-
-        <div id="ticket-code" class="ticket-number mb-6"></div>
-        
-        <div id="ticket-service" class="text-4xl font-semibold mb-8 text-gray-700"></div>
-
-        <div class="grid grid-cols-2 gap-8 text-left mb-10">
-          <div class="bg-gray-100 rounded-3xl p-8">
-            <p class="text-gray-500 text-sm uppercase tracking-widest mb-2" data-i18n="people-ahead">Personas delante</p>
-            <p id="ticket-people" class="text-6xl font-bold text-gray-800"></p>
-          </div>
-          <div class="bg-gray-100 rounded-3xl p-8">
-            <p class="text-gray-500 text-sm uppercase tracking-widest mb-2" data-i18n="wait-time">Tiempo estimado</p>
-            <p id="ticket-wait" class="text-6xl font-bold text-gray-800"></p>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center text-sm text-gray-500 mb-8">
-          <div>
-            <span data-i18n="date">Fecha y hora:</span>
-            <span id="ticket-datetime" class="font-mono ml-3 text-lg"></span>
-          </div>
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-qrcode text-4xl"></i>
-            <div id="ticket-qr"></div>
-          </div>
-        </div>
-
-        <!-- Botones de acción -->
-        <div class="flex gap-4">
-          <button onclick="cancelCurrentTicket()" 
-                  class="flex-1 py-7 text-xl font-semibold border-2 border-red-500 text-red-600 hover:bg-red-50 rounded-3xl transition-all">
-            <i class="fa-solid fa-ban mr-2"></i>
-            <span data-i18n="cancel-btn">Cancelar turno</span>
-          </button>
-          
-          <button onclick="printTicket()" 
-                  class="flex-1 py-7 text-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-3xl transition-all">
-            <i class="fa-solid fa-print mr-2"></i>
-            <span data-i18n="print-btn">Imprimir ticket</span>
-          </button>
-          
-          <button onclick="closeTicketModal()" 
-                  class="flex-1 py-7 text-xl font-semibold bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-3xl transition-all">
-            <span data-i18n="new-turn">Nuevo turno</span>
-          </button>
-        </div>
+  <!-- MODAL TICKET (REQ-03, REQ-06, REQ-08) -->
+  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 modal-overlay flex items-center justify-center z-50 p-4">
+    <div class="modal-content bg-white text-gray-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl">
+      <div class="p-10 text-center" id="ticket-content"></div>
+      
+      <div class="flex border-t border-gray-200">
+        <button onclick="cancelTicket()" 
+                class="flex-1 py-6 text-red-600 hover:bg-red-50 font-semibold flex items-center justify-center gap-2">
+          <i class="fa-solid fa-ban"></i> Cancelar turno
+        </button>
+        <button onclick="closeTicketModal()" 
+                class="flex-1 py-6 bg-red-600 text-white font-semibold flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check"></i> Aceptar
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER CON QR PARA MÓVIL (REQ-06) -->
-  <div class="fixed bottom-6 right-6 bg-white/10 backdrop-blur-xl rounded-3xl p-6 text-center max-w-[220px] border border-white/20">
-    <p class="text-xs uppercase tracking-widest mb-2 text-blue-200" data-i18n="qr-mobile">Escanea desde tu celular</p>
+  <!-- BOTÓN FLOTANTE QR MÓVIL (REQ-06) -->
+  <div class="fixed bottom-8 right-8 glass rounded-3xl p-5 text-center shadow-2xl">
+    <p class="text-xs uppercase tracking-widest mb-2 text-blue-200">Escanea desde tu celular</p>
     <div id="mobile-qr" class="mx-auto"></div>
-    <p class="text-xs text-white/60 mt-3" data-i18n="qr-desc">Accede al sistema sin esperar en el kiosco</p>
   </div>
 
   <script>
-    // ==================== CONFIGURACIÓN I18N (REQ-09) ====================
-    const translations = {
-      es: {
-        title: "Turnos PRO",
-        subtitle: "Gestión omnicanal de turnos",
-        login: "Iniciar sesión (Asesor / Admin)",
-        hero: "¿Qué servicio necesitas hoy?",
-        "hero-sub": "Selecciona y obtén tu turno en segundos",
-        "selected-service": "Servicio seleccionado:",
-        physical: "Ticket impreso",
-        "physical-desc": "Se imprime en el kiosco",
-        digital: "Ticket digital",
-        "digital-desc": "Recibe por WhatsApp / Email",
-        "phone-label": "Teléfono (obligatorio para digital)",
-        "email-label": "Correo electrónico (opcional)",
-        "generate-btn": "Generar turno",
-        "ticket-ready": "¡Tu turno ha sido generado!",
-        "people-ahead": "Personas delante",
-        "wait-time": "Tiempo estimado",
-        date: "Fecha y hora:",
-        "cancel-btn": "Cancelar turno",
-        "print-btn": "Imprimir ticket",
-        "new-turn": "Nuevo turno",
-        "qr-mobile": "Escanea desde tu celular",
-        "qr-desc": "Accede al sistema sin esperar en el kiosco"
-      },
-      en: {
-        title: "Turnos PRO",
-        subtitle: "Omnichannel queue management",
-        login: "Login (Advisor / Admin)",
-        hero: "What service do you need today?",
-        "hero-sub": "Select and get your ticket instantly",
-        "selected-service": "Selected service:",
-        physical: "Printed ticket",
-        "physical-desc": "Printed at the kiosk",
-        digital: "Digital ticket",
-        "digital-desc": "Receive by WhatsApp / Email",
-        "phone-label": "Phone (required for digital)",
-        "email-label": "Email (optional)",
-        "generate-btn": "Generate ticket",
-        "ticket-ready": "Your ticket has been generated!",
-        "people-ahead": "People ahead",
-        "wait-time": "Estimated wait",
-        date: "Date & time:",
-        "cancel-btn": "Cancel ticket",
-        "print-btn": "Print ticket",
-        "new-turn": "New ticket",
-        "qr-mobile": "Scan from your phone",
-        "qr-desc": "Access the system without waiting at the kiosk"
-      }
-    };
-
-    let currentLang = 'es';
+    let language = 'es';
     let selectedService = null;
-    let selectedDelivery = 'impreso';
+    let selectedDeliveryType = 'impreso';
     let currentTicket = null;
     let inactivityTimer = null;
 
-    // Traducir todo el DOM
+    const translations = {
+      es: {
+        heroTitle: "¿Qué servicio necesitas hoy?",
+        heroSubtitle: "Selecciona y obtén tu turno en segundos",
+        selectedLabel: "Servicio seleccionado:",
+        physicalText: "Ticket impreso",
+        physicalDesc: "Se imprime en el kiosco",
+        digitalText: "Ticket digital",
+        digitalDesc: "Por WhatsApp / Email",
+        phoneLabel: "Teléfono (obligatorio para digital)",
+        emailLabel: "Correo electrónico (opcional)",
+        generateBtn: "Generar turno",
+        ticketReady: "¡Tu turno ha sido generado!",
+        peopleAhead: "Personas delante",
+        waitTime: "Tiempo estimado",
+        minutes: "minutos",
+        date: "Fecha y hora:"
+      },
+      en: {
+        heroTitle: "What service do you need today?",
+        heroSubtitle: "Select and get your ticket in seconds",
+        selectedLabel: "Selected service:",
+        physicalText: "Printed ticket",
+        physicalDesc: "Printed at kiosk",
+        digitalText: "Digital ticket",
+        digitalDesc: "Via WhatsApp / Email",
+        phoneLabel: "Phone (required for digital)",
+        emailLabel: "Email (optional)",
+        generateBtn: "Generate ticket",
+        ticketReady: "Your ticket is ready!",
+        peopleAhead: "People ahead",
+        waitTime: "Estimated time",
+        minutes: "minutes",
+        date: "Date & time:"
+      }
+    };
+
+    // Traducir página
     function translatePage() {
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[currentLang][key]) {
-          el.textContent = translations[currentLang][key];
-        }
-      });
+      document.getElementById('hero-title').textContent = translations[language].heroTitle;
+      document.getElementById('hero-subtitle').textContent = translations[language].heroSubtitle;
+      document.getElementById('selected-label').textContent = translations[language].selectedLabel;
+      document.getElementById('physical-text').textContent = translations[language].physicalText;
+      document.getElementById('physical-desc').textContent = translations[language].physicalDesc;
+      document.getElementById('digital-text').textContent = translations[language].digitalText;
+      document.getElementById('digital-desc').textContent = translations[language].digitalDesc;
+      document.getElementById('phone-label').textContent = translations[language].phoneLabel;
+      document.getElementById('email-label').textContent = translations[language].emailLabel;
+      document.getElementById('generate-btn').textContent = translations[language].generateBtn;
     }
 
     function switchLanguage(lang) {
-      currentLang = lang;
+      language = lang;
       document.getElementById('lang-es').classList.toggle('bg-white', lang === 'es');
       document.getElementById('lang-es').classList.toggle('text-blue-700', lang === 'es');
       document.getElementById('lang-en').classList.toggle('bg-white', lang === 'en');
@@ -280,7 +277,7 @@
       translatePage();
     }
 
-    // ==================== CARGA DE SERVICIOS ====================
+    // Cargar servicios (exacto al estilo del screenshot)
     async function loadServices() {
       try {
         const res = await fetch('/api/estado');
@@ -291,180 +288,160 @@
           .filter(s => s.active)
           .map(s => `
             <div onclick="selectService('${s.id}', '${s.name}', '${s.color}')" 
-                 class="service-card bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center border-4 border-transparent">
-              <div class="w-24 h-24 mx-auto mb-8 rounded-3xl flex items-center justify-center text-6xl shadow-inner"
-                   style="background: ${s.color}15; color: ${s.color}">📌</div>
-              <h3 class="text-3xl font-semibold mb-3">${s.name}</h3>
-              <p class="text-gray-500 text-xl">${s.estimatedMinutes} min aprox.</p>
+                 class="service-card bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center">
+              <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-6xl" 
+                   style="background: #FF69B4; color: white;">📌</div>
+              <h3 class="text-2xl font-bold mb-1">${s.name}</h3>
+              <p class="text-gray-500">${s.estimatedMinutes} min aprox.</p>
             </div>
           `).join('');
       } catch (e) {
-        console.error("Error cargando servicios", e);
+        console.error(e);
       }
     }
 
     function selectService(id, name, color) {
       selectedService = { id, name, color };
       
-      // Resaltar la tarjeta
-      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
+      // Resaltar tarjeta
+      document.querySelectorAll('.service-card').forEach(card => card.classList.remove('active'));
       event.currentTarget.classList.add('active');
       
-      // Mostrar panel de generación
+      // Mostrar panel
       document.getElementById('generation-panel').classList.remove('hidden');
-      document.getElementById('selected-service-name').innerHTML = `
-        <span style="color:${color}">${name}</span>
-      `;
+      document.getElementById('selected-service-name').innerHTML = `<span style="color:${color}">${name}</span>`;
       
-      // Reiniciar delivery a impreso
-      selectDelivery('impreso');
+      selectDelivery('impreso'); // por defecto impreso
       resetInactivityTimer();
     }
 
     function selectDelivery(type) {
-      selectedDelivery = type;
-      
-      // Estilos visuales
-      document.getElementById('label-impreso').classList.toggle('border-emerald-500', type === 'impreso');
-      document.getElementById('label-digital').classList.toggle('border-emerald-500', type === 'digital');
-      
-      // Mostrar campos digitales
+      selectedDeliveryType = type;
+      document.getElementById('label-impreso').classList.toggle('border-red-500', type === 'impreso');
+      document.getElementById('label-digital').classList.toggle('border-red-500', type === 'digital');
       document.getElementById('digital-fields').classList.toggle('hidden', type !== 'digital');
     }
 
-    // ==================== GENERAR TICKET (REQ-02, 03, 08, 10) ====================
+    // Generar ticket (CORREGIDO - ahora sí recibe result.ticket)
     async function generateTicket() {
-      if (!selectedService) return alert('Selecciona un servicio');
-      
-      const isDigital = selectedDelivery === 'digital';
-      
+      if (!selectedService) return;
+
+      const isDigital = selectedDeliveryType === 'digital';
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+
       // Validación REQ-10
-      if (isDigital) {
-        const phone = document.getElementById('phone').value.trim();
-        const email = document.getElementById('email').value.trim();
-        if (!phone || !/^\+?[\d\s-]{8,15}$/.test(phone)) {
-          return alert(currentLang === 'es' ? 'Ingresa un teléfono válido' : 'Enter a valid phone number');
-        }
+      if (isDigital && (!phone || !/^\+?[\d\s-]{8,15}$/.test(phone))) {
+        return alert(language === 'es' ? 'Ingresa un teléfono válido' : 'Enter a valid phone number');
       }
 
       try {
-        const payload = {
-          serviceId: selectedService.id,
-          channel: 'kiosco',
-          deliveryType: selectedDelivery,
-          phone: isDigital ? document.getElementById('phone').value.trim() : '',
-          email: isDigital ? document.getElementById('email').value.trim() : '',
-          language: currentLang
-        };
-
         const res = await fetch('/api/turnos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            serviceId: selectedService.id,
+            channel: 'kiosco',
+            deliveryType: selectedDeliveryType,
+            phone: isDigital ? phone : '',
+            email: isDigital ? email : '',
+            language: language
+          })
         });
 
         const result = await res.json();
 
         if (result.success && result.ticket) {
           currentTicket = result.ticket;
-          showTicketModal(currentTicket);
+          showTicketModal(result.ticket);
         } else {
-          alert(result.message || (currentLang === 'es' ? 'No se pudo generar el ticket' : 'Could not generate ticket'));
+          alert(result.message || 'No se pudo generar el ticket');
         }
       } catch (e) {
         console.error(e);
-        alert('Error de conexión. Intenta nuevamente.');
+        alert('Error de conexión');
       }
     }
 
     function showTicketModal(ticket) {
-      document.getElementById('ticket-modal').classList.remove('hidden');
-      
-      // Código grande
-      document.getElementById('ticket-code').textContent = ticket.id;
-      
-      // Servicio
-      document.getElementById('ticket-service').textContent = ticket.serviceName || selectedService.name;
-      
-      // Personas y tiempo
-      document.getElementById('ticket-people').textContent = ticket.peopleAhead || 0;
-      document.getElementById('ticket-wait').textContent = `${ticket.estimatedWaitMinutes || 0} min`;
-      
-      // Fecha y hora
-      const date = new Date(ticket.queueEnteredAt || Date.now());
-      document.getElementById('ticket-datetime').textContent = date.toLocaleString(currentLang === 'es' ? 'es-CO' : 'en-US', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-      });
+      const content = document.getElementById('ticket-content');
+      const t = translations[language];
 
-      // QR (REQ-06)
-      const qrContainer = document.getElementById('ticket-qr');
-      qrContainer.innerHTML = `
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(ticket.id)}" 
-             alt="QR Ticket" class="rounded-2xl shadow-md">
+      const qrCanvas = document.createElement('canvas');
+      QRCode.toCanvas(qrCanvas, ticket.id, { width: 220, margin: 2 });
+
+      content.innerHTML = `
+        <div class="text-center">
+          <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-6 py-2 rounded-3xl mb-6 text-lg font-semibold">
+            <i class="fa-solid fa-check-circle"></i>
+            ${t.ticketReady}
+          </div>
+          
+          <div class="ticket-number mono">${ticket.id}</div>
+          <p class="text-3xl font-semibold mt-4 mb-8">${selectedService.name}</p>
+          
+          <div class="grid grid-cols-2 gap-6 mb-10">
+            <div class="bg-gray-100 rounded-3xl p-6">
+              <p class="text-sm text-gray-500">${t.peopleAhead}</p>
+              <p class="text-5xl font-bold text-blue-700">${ticket.peopleAhead}</p>
+            </div>
+            <div class="bg-gray-100 rounded-3xl p-6">
+              <p class="text-sm text-gray-500">${t.waitTime}</p>
+              <p class="text-5xl font-bold text-red-600">${ticket.estimatedWaitMinutes} ${t.minutes}</p>
+            </div>
+          </div>
+          
+          <div class="mb-8">
+            <p class="text-sm text-gray-500 mb-2">${t.date}</p>
+            <p class="font-mono text-xl">${new Date(ticket.queueEnteredAt).toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}</p>
+          </div>
+          
+          <div class="flex justify-center mb-8">
+            ${qrCanvas.outerHTML}
+          </div>
+        </div>
       `;
 
+      document.getElementById('ticket-modal').classList.remove('hidden');
       resetInactivityTimer();
     }
 
-    // ==================== CANCELAR (REQ-04) ====================
-    async function cancelCurrentTicket() {
+    async function cancelTicket() {
       if (!currentTicket) return;
+      if (!confirm(language === 'es' ? '¿Cancelar este turno?' : 'Cancel this ticket?')) return;
       
-      if (!confirm(currentLang === 'es' ? '¿Estás seguro de cancelar este turno?' : 'Are you sure you want to cancel this ticket?')) return;
-      
-      try {
-        await fetch(`/api/turnos/${currentTicket.id}/cancelar`, { method: 'POST' });
-        closeTicketModal();
-        alert(currentLang === 'es' ? 'Turno cancelado correctamente' : 'Ticket cancelled successfully');
-      } catch (e) {
-        alert('No se pudo cancelar el turno');
-      }
-    }
-
-    function printTicket() {
-      alert(currentLang === 'es' ? '🎟️ Ticket enviado a impresora del kiosco' : '🎟️ Ticket sent to kiosk printer');
-      // En producción: window.print() o llamada a endpoint de impresión
+      await fetch(`/api/turnos/${currentTicket.id}/cancelar`, { method: 'POST' });
+      closeTicketModal();
     }
 
     function closeTicketModal() {
       document.getElementById('ticket-modal').classList.add('hidden');
       currentTicket = null;
-      loadServices(); // refrescar servicios
       document.getElementById('generation-panel').classList.add('hidden');
       selectedService = null;
+      loadServices();
     }
 
-    // ==================== INACTIVIDAD (REQ-05) ====================
+    // Reinicio automático (REQ-05)
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => {
-        if (document.getElementById('ticket-modal').classList.contains('hidden')) {
-          window.location.reload();
-        } else {
-          closeTicketModal();
-        }
-      }, 15000); // 15 segundos
+        window.location.reload();
+      }, 15000);
     }
 
-    // ==================== QR MÓVIL (REQ-06) ====================
-    function generateMobileQR() {
-      const qrContainer = document.getElementById('mobile-qr');
-      const url = window.location.origin; // enlace al kiosco
-      qrContainer.innerHTML = `
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}" 
-             alt="QR Móvil" class="rounded-2xl">
-      `;
+    // QR flotante móvil
+    function createMobileQR() {
+      const container = document.getElementById('mobile-qr');
+      QRCode.toCanvas(container, window.location.origin, { width: 160, margin: 2 });
     }
 
-    // ==================== INICIO ====================
+    // INICIO
     window.onload = () => {
       loadServices();
-      generateMobileQR();
+      createMobileQR();
       translatePage();
       resetInactivityTimer();
-      
-      // Cualquier clic reinicia el temporizador
       document.addEventListener('click', resetInactivityTimer);
       document.addEventListener('touchstart', resetInactivityTimer);
     };
