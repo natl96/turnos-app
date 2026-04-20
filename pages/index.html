@@ -18,46 +18,25 @@
       --secondary: #0057B8;
       --accent: #00B140;
       --dark: #0A1428;
-      --light: #F5F5F5;
     }
 
     body {
       background: linear-gradient(135deg, var(--dark) 0%, #1A2337 100%);
       min-height: 100vh;
-      overflow-y: auto; /* ← FIX: permite scroll con rueda del ratón */
+      overflow-y: auto; /* ✅ Scroll con rueda del ratón */
     }
 
     .service-card {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
       border: 3px solid transparent;
     }
-
     .service-card:hover {
       transform: translateY(-8px);
       box-shadow: 0 25px 50px -12px rgba(236, 0, 0, 0.4);
     }
-
     .service-card.active {
       border-color: #0057B8;
       box-shadow: 0 0 0 6px rgba(0, 87, 184, 0.3);
-    }
-
-    .service-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: var(--primary);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-
-    .service-card:hover::before {
-      transform: scaleX(1);
     }
 
     .glass {
@@ -76,29 +55,15 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .modal-overlay {
-      backdrop-filter: blur(12px);
-    }
-
     @keyframes popIn {
       0% { transform: scale(0.85); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    .modal-content {
-      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(236, 0, 0, 0.15);
-    }
   </style>
 </head>
 <body class="text-white">
-  
-  <!-- HEADER - Exacto al screenshot -->
+
+  <!-- HEADER -->
   <header class="glass border-b border-white/10 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -109,53 +74,45 @@
         </div>
       </div>
 
-      <!-- Idioma (REQ-09) -->
+      <!-- Cambio de idioma (REQ-09) -->
       <div class="flex bg-white/10 rounded-3xl p-1">
-        <button onclick="switchLanguage('es')" id="lang-es"
-                class="px-8 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all">🇨🇴 ES</button>
-        <button onclick="switchLanguage('en')" id="lang-en"
-                class="px-8 py-3 rounded-3xl font-semibold flex items-center gap-2 transition-all">🇬🇧 EN</button>
+        <button onclick="switchLanguage('es')" id="lang-es" class="px-8 py-3 rounded-3xl font-semibold">🇨🇴 ES</button>
+        <button onclick="switchLanguage('en')" id="lang-en" class="px-8 py-3 rounded-3xl font-semibold">🇬🇧 EN</button>
       </div>
 
-      <a href="/login" 
-         class="inline-flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition-all shadow-lg">
-        <i class="fa-solid fa-right-to-bracket text-xl"></i>
+      <a href="../login" class="inline-flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition-all shadow-lg">
+        <i class="fa-solid fa-right-to-bracket"></i>
         Iniciar sesión (Asesor / Admin)
       </a>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-8 py-12">
-    
-    <!-- HERO -->
     <div class="text-center mb-12">
       <h2 class="text-5xl font-bold mb-3" id="hero-title">¿Qué servicio necesitas hoy?</h2>
       <p class="text-xl text-blue-200" id="hero-subtitle">Selecciona y obtén tu turno en segundos</p>
     </div>
 
-    <!-- SERVICIOS (REQ-01) - Diseño idéntico al screenshot -->
+    <!-- SERVICIOS (REQ-01) -->
     <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"></div>
 
-    <!-- PANEL GENERACIÓN (aparece al seleccionar) -->
+    <!-- PANEL GENERACIÓN -->
     <div id="generation-panel" class="hidden glass rounded-3xl p-8 max-w-2xl mx-auto">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-2xl font-semibold" id="selected-label">Servicio seleccionado:</h3>
         <div id="selected-service-name" class="text-3xl font-bold text-blue-400"></div>
       </div>
 
-      <!-- Elección impreso / digital (REQ-02) -->
+      <!-- Ticket impreso / digital (REQ-02) -->
       <div class="flex gap-4 mb-8">
-        <label onclick="selectDelivery('impreso')" id="label-impreso"
-               class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent hover:border-white/30 transition-all">
+        <label onclick="selectDelivery('impreso')" id="label-impreso" class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent">
           <i class="fa-solid fa-print text-4xl text-red-400"></i>
           <div>
             <p class="font-semibold text-xl" id="physical-text">Ticket impreso</p>
             <p class="text-sm text-white/70" id="physical-desc">Se imprime en el kiosco</p>
           </div>
         </label>
-        
-        <label onclick="selectDelivery('digital')" id="label-digital"
-               class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent hover:border-white/30 transition-all">
+        <label onclick="selectDelivery('digital')" id="label-digital" class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent">
           <i class="fa-solid fa-mobile-screen-button text-4xl text-emerald-400"></i>
           <div>
             <p class="font-semibold text-xl" id="digital-text">Ticket digital</p>
@@ -164,50 +121,40 @@
         </label>
       </div>
 
-      <!-- Campos digitales (REQ-10) -->
+      <!-- Datos digitales (REQ-10) -->
       <div id="digital-fields" class="hidden space-y-6">
         <div>
           <label class="block text-sm mb-2 text-white/70" id="phone-label">Teléfono <span class="text-red-400">*</span></label>
-          <input type="tel" id="phone" placeholder="300 123 4567"
-                 class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
+          <input type="tel" id="phone" placeholder="300 123 4567" class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
         </div>
         <div>
           <label class="block text-sm mb-2 text-white/70" id="email-label">Correo electrónico (opcional)</label>
-          <input type="email" id="email" placeholder="tu@email.com"
-                 class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
+          <input type="email" id="email" placeholder="tu@email.com" class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
         </div>
       </div>
 
-      <button onclick="generateTicket()" 
-              class="w-full mt-4 py-7 bg-red-600 hover:bg-red-700 text-2xl font-semibold rounded-3xl transition-all flex items-center justify-center gap-3">
+      <button onclick="generateTicket()" class="w-full mt-4 py-7 bg-red-600 hover:bg-red-700 text-2xl font-semibold rounded-3xl transition-all flex items-center justify-center gap-3">
         <i class="fa-solid fa-ticket"></i>
         <span id="generate-btn">Generar turno</span>
       </button>
     </div>
   </main>
 
-  <!-- MODAL TICKET (REQ-03, REQ-06, REQ-08) -->
-  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 modal-overlay flex items-center justify-center z-50 p-4">
-    <div class="modal-content bg-white text-gray-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl">
+  <!-- MODAL DEL TICKET (REQ-03, REQ-06, REQ-08) -->
+  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-popIn">
       <div class="p-10 text-center" id="ticket-content"></div>
-      
       <div class="flex border-t border-gray-200">
-        <button onclick="cancelTicket()" 
-                class="flex-1 py-6 text-red-600 hover:bg-red-50 font-semibold flex items-center justify-center gap-2">
-          <i class="fa-solid fa-ban"></i> Cancelar turno
-        </button>
-        <button onclick="closeTicketModal()" 
-                class="flex-1 py-6 bg-red-600 text-white font-semibold flex items-center justify-center gap-2">
-          <i class="fa-solid fa-check"></i> Aceptar
-        </button>
+        <button onclick="cancelTicket()" class="flex-1 py-6 text-red-600 font-semibold flex items-center justify-center gap-2 hover:bg-red-50">Cancelar turno</button>
+        <button onclick="closeTicketModal()" class="flex-1 py-6 bg-red-600 text-white font-semibold flex items-center justify-center gap-2">Aceptar</button>
       </div>
     </div>
   </div>
 
-  <!-- BOTÓN FLOTANTE QR MÓVIL (REQ-06) -->
+  <!-- QR MÓVIL FLOTANTE (REQ-06) -->
   <div class="fixed bottom-8 right-8 glass rounded-3xl p-5 text-center shadow-2xl">
     <p class="text-xs uppercase tracking-widest mb-2 text-blue-200">Escanea desde tu celular</p>
-    <div id="mobile-qr" class="mx-auto"></div>
+    <div id="mobile-qr"></div>
   </div>
 
   <script>
@@ -240,7 +187,7 @@
         heroSubtitle: "Select and get your ticket in seconds",
         selectedLabel: "Selected service:",
         physicalText: "Printed ticket",
-        physicalDesc: "Printed at kiosk",
+        physicalDesc: "Printed at the kiosk",
         digitalText: "Digital ticket",
         digitalDesc: "Via WhatsApp / Email",
         phoneLabel: "Phone (required for digital)",
@@ -254,7 +201,6 @@
       }
     };
 
-    // Traducir página
     function translatePage() {
       document.getElementById('hero-title').textContent = translations[language].heroTitle;
       document.getElementById('hero-subtitle').textContent = translations[language].heroSubtitle;
@@ -277,24 +223,19 @@
       translatePage();
     }
 
-    // Cargar servicios (exacto al estilo del screenshot)
     async function loadServices() {
       try {
         const res = await fetch('/api/estado');
         const data = await res.json();
-        
         const grid = document.getElementById('services-grid');
-        grid.innerHTML = data.services
-          .filter(s => s.active)
-          .map(s => `
-            <div onclick="selectService('${s.id}', '${s.name}', '${s.color}')" 
-                 class="service-card bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center">
-              <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-6xl" 
-                   style="background: #FF69B4; color: white;">📌</div>
-              <h3 class="text-2xl font-bold mb-1">${s.name}</h3>
-              <p class="text-gray-500">${s.estimatedMinutes} min aprox.</p>
-            </div>
-          `).join('');
+        grid.innerHTML = data.services.filter(s => s.active).map(s => `
+          <div onclick="selectService('${s.id}', '${s.name}', '${s.color}')" 
+               class="service-card bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-6xl" style="background: #FF69B4; color: white;">📌</div>
+            <h3 class="text-2xl font-bold mb-1">${s.name}</h3>
+            <p class="text-gray-500">${s.estimatedMinutes} min aprox.</p>
+          </div>
+        `).join('');
       } catch (e) {
         console.error(e);
       }
@@ -302,16 +243,11 @@
 
     function selectService(id, name, color) {
       selectedService = { id, name, color };
-      
-      // Resaltar tarjeta
-      document.querySelectorAll('.service-card').forEach(card => card.classList.remove('active'));
+      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
       event.currentTarget.classList.add('active');
-      
-      // Mostrar panel
       document.getElementById('generation-panel').classList.remove('hidden');
       document.getElementById('selected-service-name').innerHTML = `<span style="color:${color}">${name}</span>`;
-      
-      selectDelivery('impreso'); // por defecto impreso
+      selectDelivery('impreso');
       resetInactivityTimer();
     }
 
@@ -322,17 +258,15 @@
       document.getElementById('digital-fields').classList.toggle('hidden', type !== 'digital');
     }
 
-    // Generar ticket (CORREGIDO - ahora sí recibe result.ticket)
     async function generateTicket() {
-      if (!selectedService) return;
+      if (!selectedService) return alert('Selecciona un servicio');
 
       const isDigital = selectedDeliveryType === 'digital';
       const phone = document.getElementById('phone').value.trim();
       const email = document.getElementById('email').value.trim();
 
-      // Validación REQ-10
       if (isDigital && (!phone || !/^\+?[\d\s-]{8,15}$/.test(phone))) {
-        return alert(language === 'es' ? 'Ingresa un teléfono válido' : 'Enter a valid phone number');
+        return alert(language === 'es' ? 'Ingresa un teléfono válido' : 'Enter a valid phone');
       }
 
       try {
@@ -373,13 +307,10 @@
       content.innerHTML = `
         <div class="text-center">
           <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-6 py-2 rounded-3xl mb-6 text-lg font-semibold">
-            <i class="fa-solid fa-check-circle"></i>
-            ${t.ticketReady}
+            <i class="fa-solid fa-check-circle"></i> ${t.ticketReady}
           </div>
-          
           <div class="ticket-number mono">${ticket.id}</div>
           <p class="text-3xl font-semibold mt-4 mb-8">${selectedService.name}</p>
-          
           <div class="grid grid-cols-2 gap-6 mb-10">
             <div class="bg-gray-100 rounded-3xl p-6">
               <p class="text-sm text-gray-500">${t.peopleAhead}</p>
@@ -390,15 +321,11 @@
               <p class="text-5xl font-bold text-red-600">${ticket.estimatedWaitMinutes} ${t.minutes}</p>
             </div>
           </div>
-          
           <div class="mb-8">
             <p class="text-sm text-gray-500 mb-2">${t.date}</p>
             <p class="font-mono text-xl">${new Date(ticket.queueEnteredAt).toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}</p>
           </div>
-          
-          <div class="flex justify-center mb-8">
-            ${qrCanvas.outerHTML}
-          </div>
+          <div class="flex justify-center">${qrCanvas.outerHTML}</div>
         </div>
       `;
 
@@ -408,8 +335,7 @@
 
     async function cancelTicket() {
       if (!currentTicket) return;
-      if (!confirm(language === 'es' ? '¿Cancelar este turno?' : 'Cancel this ticket?')) return;
-      
+      if (!confirm(language === 'es' ? '¿Cancelar este turno?' : 'Cancel ticket?')) return;
       await fetch(`/api/turnos/${currentTicket.id}/cancelar`, { method: 'POST' });
       closeTicketModal();
     }
@@ -422,28 +348,22 @@
       loadServices();
     }
 
-    // Reinicio automático (REQ-05)
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => {
-        window.location.reload();
-      }, 15000);
+      inactivityTimer = setTimeout(() => window.location.reload(), 15000);
     }
 
-    // QR flotante móvil
     function createMobileQR() {
       const container = document.getElementById('mobile-qr');
-      QRCode.toCanvas(container, window.location.origin, { width: 160, margin: 2 });
+      QRCode.toCanvas(container, window.location.origin, { width: 160 });
     }
 
-    // INICIO
     window.onload = () => {
       loadServices();
       createMobileQR();
       translatePage();
       resetInactivityTimer();
       document.addEventListener('click', resetInactivityTimer);
-      document.addEventListener('touchstart', resetInactivityTimer);
     };
   </script>
 </body>
