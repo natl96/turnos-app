@@ -1,115 +1,396 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pantalla de Espera - Turnos PRO</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .turno-grande { font-size: 7rem; line-height: 1; font-weight: 700; letter-spacing: -8px; }
-    .marquee { animation: marquee 25s linear infinite; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalla de Espera – TurnoFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  :root {
+    --bg: #060810;
+    --panel: #0d1117;
+    --border: #1a1f2e;
+    --accent: #00d4aa;
+    --red: #ff4b5c;
+    --gold: #ffb347;
+    --blue: #4da6ff;
+    --text: #e8eaf0;
+    --muted: #4a5068;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 10% 90%, rgba(0,212,170,.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 10%, rgba(77,166,255,.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .screen-wrap {
+    position: relative; z-index: 1;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 2rem;
+    gap: 1.5rem;
+  }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem; font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .clock {
+    font-size: 2rem; font-weight: 500;
+    color: var(--accent); letter-spacing: .05em;
+  }
+  .date-str { font-size: .75rem; color: var(--muted); text-align: right; margin-top: .1rem; }
+
+  .main-area {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    min-height: 0;
+  }
+
+  .called-panel {
+    display: flex; flex-direction: column; gap: 1rem;
+    min-height: 0;
+  }
+  .called-label {
+    font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: .25rem;
+  }
+  .called-list {
+    flex: 1; display: flex; flex-direction: column; gap: .75rem;
+    overflow: hidden;
+  }
+
+  .called-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.75rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    position: relative; overflow: hidden;
+    transition: all .3s;
+  }
+  .called-item.new {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(0,212,170,.2), inset 0 0 20px rgba(0,212,170,.03);
+    animation: pulse-border 2s ease;
+  }
+  @keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(0,212,170,.5); }
+    50% { box-shadow: 0 0 40px rgba(0,212,170,.3); }
+    100% { box-shadow: 0 0 30px rgba(0,212,170,.2); }
+  }
+  .called-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem; font-weight: 800;
+    line-height: 1; letter-spacing: -2px;
+    color: var(--accent);
+    min-width: 120px;
+  }
+  .called-info { flex: 1; }
+  .called-srv { font-size: .8rem; color: var(--muted); margin-bottom: .2rem; }
+  .called-name { font-size: 1rem; font-weight: 500; }
+  .called-modulo {
+    font-size: .7rem; color: var(--muted);
+    display: flex; align-items: center; gap: .4rem; margin-top: .25rem;
+  }
+  .called-hora {
+    font-size: .8rem; color: var(--muted);
+    text-align: right;
+  }
+
+  .no-calls {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--muted); text-align: center; gap: 1rem;
+  }
+  .no-calls-icon { font-size: 3rem; opacity: .3; }
+
+  .right-panel {
+    display: flex; flex-direction: column; gap: 1rem;
+    min-height: 0;
+  }
+
+  .info-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+  .ic-label {
+    font-size: .6rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: .75rem;
+  }
+
+  .srv-list { display: flex; flex-direction: column; gap: .6rem; }
+  .srv-row {
+    display: flex; align-items: center; gap: .75rem;
+  }
+  .srv-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .srv-name-label { font-size: .85rem; flex: 1; }
+  .srv-n {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .total-display {
+    text-align: center;
+  }
+  .total-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem; font-weight: 800;
+    line-height: 1; color: var(--gold);
+    letter-spacing: -3px;
+  }
+  .total-label { font-size: .7rem; color: var(--muted); margin-top: .25rem; }
+
+  .bottom-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .9rem 1.5rem;
+  }
+  .bb-item { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted); }
+  .bb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .bb-dot.off { background: var(--muted); }
+
+  .flash {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,212,170,.06);
+    border: 2px solid rgba(0,212,170,.3);
+    pointer-events: none; opacity: 0;
+    transition: opacity .15s;
+  }
+  .flash.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .main-area { grid-template-columns: 1fr; }
+    .right-panel { display: none; }
+  }
+</style>
 </head>
-<body class="bg-gradient-to-br from-slate-950 to-gray-900 text-white min-h-screen overflow-hidden flex flex-col">
-  <!-- HEADER -->
-  <div class="bg-white/10 backdrop-blur-md border-b border-white/10 py-4">
-    <div class="max-w-7xl mx-auto px-8 flex justify-between items-center">
-      <div class="flex items-center gap-4">
-        <div class="text-4xl">📋</div>
-        <div>
-          <h1 class="text-4xl font-bold">Turnos PRO</h1>
-          <p class="text-blue-200">Estamos aquí para atenderte</p>
-        </div>
+<body>
+
+<div class="flash" id="flash"></div>
+
+<div class="screen-wrap">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div>
+      <div class="logo">Turno<span>Flow</span></div>
+      <div style="font-size:.65rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.2rem">
+        Pantalla de espera
       </div>
-      <div id="current-time" class="text-3xl font-mono font-semibold"></div>
+    </div>
+    <div>
+      <div class="clock" id="clock">00:00</div>
+      <div class="date-str" id="date-str">—</div>
     </div>
   </div>
 
-  <div class="flex-1 flex">
-    <!-- TURNO ACTUAL -->
-    <div class="flex-1 flex flex-col items-center justify-center border-r border-white/10 p-12">
-      <p class="uppercase tracking-[4px] text-emerald-400 text-xl font-semibold mb-4">AHORA LLAMANDO</p>
-      <div id="current-ticket" class="turno-grande text-emerald-400 mb-6">CT-000</div>
-      <div id="current-service" class="text-5xl font-semibold text-white"></div>
-      <div class="mt-8 flex items-center gap-3 bg-emerald-500/20 text-emerald-400 px-8 py-3 rounded-3xl text-xl">
-        <i class="fa-solid fa-bell animate-pulse"></i>
-        <span id="current-module">Ventanilla 03</span>
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <!-- LLAMADOS -->
+    <div class="called-panel">
+      <div class="called-label">Últimos turnos llamados</div>
+      <div class="called-list" id="called-list">
+        <div class="no-calls">
+          <div class="no-calls-icon">🎫</div>
+          <p>Los turnos llamados aparecerán aquí</p>
+        </div>
       </div>
     </div>
 
-    <!-- ÚLTIMOS TURNOS LLAMADOS -->
-    <div class="w-2/5 bg-white/5 p-10 flex flex-col">
-      <h3 class="text-2xl font-semibold mb-8 flex items-center gap-3">
-        <i class="fa-solid fa-history"></i> Últimos turnos llamados
-      </h3>
-      <div id="last-called" class="space-y-6 flex-1"></div>
-
-      <!-- MENSAJES INFORMATIVOS (REQ-29) -->
-      <div class="mt-auto">
-        <div class="bg-white/10 rounded-3xl p-6 text-sm leading-relaxed overflow-hidden">
-          <div id="marquee" class="marquee whitespace-nowrap">
-            📢 Recuerda traer tu documento • 💳 Pago con tarjeta disponible • 🕒 Horario de atención 8:00 - 17:00 • 
-            ¡Gracias por su paciencia!
-          </div>
+    <!-- PANEL DERECHO -->
+    <div class="right-panel">
+      <div class="info-card">
+        <div class="ic-label">Total en espera</div>
+        <div class="total-display">
+          <div class="total-num" id="total-espera">0</div>
+          <div class="total-label">personas en cola</div>
         </div>
+      </div>
+      <div class="info-card" style="flex:1;overflow:hidden">
+        <div class="ic-label">Cola por servicio</div>
+        <div class="srv-list" id="srv-list">
+          <div style="font-size:.8rem;color:var(--muted)">Cargando…</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-label">Sistema</div>
+        <div class="connection-status" id="conn-status">● Conectado en tiempo real</div>
       </div>
     </div>
   </div>
 
-  <script>
-    let lastCalledData = [];
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bb-item">
+      <span class="bb-dot" id="live-dot"></span>
+      <span id="live-text">En vivo</span>
+    </div>
+    <div class="bb-item" style="font-size:.7rem;color:var(--muted)">
+      TurnoFlow · Sistema de Gestión de Turnos Omnicanal
+    </div>
+    <div class="bb-item">
+      <a href="cliente.html" style="color:var(--accent);text-decoration:none;font-size:.72rem">
+        Solicitar turno →
+      </a>
+    </div>
+  </div>
+</div>
 
-    async function loadWaitingScreen() {
-      try {
-        const res = await fetch('/api/estado');
-        const data = await res.json();
+<script>
+const socket = io();
 
-        // Turno actual (usamos el primero de la cola o el último llamado)
-        const current = data.queue && data.queue[0] 
-          ? data.queue[0] 
-          : (data.history && data.history[data.history.length-1]);
+let llamados = [];
 
-        if (current) {
-          document.getElementById('current-ticket').textContent = current.id || '---';
-          document.getElementById('current-service').textContent = current.serviceName || 'Atención general';
-          document.getElementById('current-module').innerHTML = `Ventanilla <span class="font-mono">${current.module || '01'}</span>`;
-        }
+// RELOJ
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('date-str').textContent = now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+updateClock();
+setInterval(updateClock, 1000);
 
-        // Últimos 5 turnos llamados
-        const container = document.getElementById('last-called');
-        container.innerHTML = (data.history || []).slice(-5).reverse().map(t => `
-          <div class="flex justify-between items-center bg-white/10 rounded-2xl px-6 py-4">
-            <div>
-              <span class="font-mono text-3xl">${t.id}</span>
-              <span class="ml-4 text-white/80">${t.serviceName}</span>
-            </div>
-            <div class="text-right">
-              <span class="text-emerald-400 font-semibold">${t.calledAt || 'Ahora'}</span>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        console.error("Error en pantalla de espera", e);
-      }
-    }
+// RENDER LLAMADOS
+function renderLlamados(data) {
+  llamados = data || [];
+  const el = document.getElementById('called-list');
+  if (!llamados.length) {
+    el.innerHTML = `
+      <div class="no-calls">
+        <div class="no-calls-icon">🎫</div>
+        <p>Los turnos llamados aparecerán aquí</p>
+      </div>`;
+    return;
+  }
+  el.innerHTML = llamados.slice(0, 5).map((item, i) => `
+    <div class="called-item ${i === 0 ? 'new' : ''}">
+      <div class="called-num">${item.id || item.codigo}</div>
+      <div class="called-info">
+        <div class="called-srv">${item.serviceName || '—'}</div>
+        <div class="called-name">${item.nombre || 'Cliente'}</div>
+        <div class="called-modulo">Diríjase al Módulo ${item.modulo || '—'}</div>
+      </div>
+      <div class="called-hora">${item.hora || new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})}</div>
+    </div>
+  `).join('');
+}
 
-    function updateClock() {
-      const timeEl = document.getElementById('current-time');
-      setInterval(() => {
-        const now = new Date();
-        timeEl.textContent = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-      }, 1000);
-    }
+function renderServicios(svcs) {
+  const max = Math.max(...(svcs || []).map(s => s.enEspera || 0), 1);
+  document.getElementById('srv-list').innerHTML = (svcs || []).map((s, i) => `
+    <div>
+      <div class="srv-row">
+        <div class="srv-dot" style="background:#00d4aa"></div>
+        <span class="srv-name-label">${s.nombre || s.name}</span>
+        <span class="srv-n">${s.enEspera || 0}</span>
+      </div>
+    </div>
+  `).join('');
+}
 
-    // Actualizar cada 4 segundos
-    window.onload = () => {
-      loadWaitingScreen();
-      setInterval(loadWaitingScreen, 4000);
-      updateClock();
-    };
-  </script>
+// FLASH + SONIDO
+function flashScreen() {
+  const f = document.getElementById('flash');
+  f.classList.add('show');
+  setTimeout(() => f.classList.remove('show'), 300);
+}
+
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.value = 0.25;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.15);
+      o.stop(ctx.currentTime + i * 0.15 + 0.3);
+    });
+  } catch(e) {}
+}
+
+// SOCKET
+socket.on('connect', () => {
+  document.getElementById('conn-status').textContent = '● Conectado en tiempo real';
+  document.getElementById('live-dot').classList.remove('off');
+});
+
+socket.on('disconnect', () => {
+  document.getElementById('conn-status').textContent = '○ Desconectado';
+  document.getElementById('live-dot').classList.add('off');
+});
+
+socket.on('estado', data => {
+  document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
+  renderServicios(data.servicios || []);
+});
+
+socket.on('turno-llamado', data => {
+  const t = data.turno || data;
+  llamados.unshift({
+    id: t.id,
+    serviceName: t.serviceName,
+    nombre: t.nombre,
+    modulo: data.modulo || '01',
+    hora: new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})
+  });
+  if (llamados.length > 5) llamados.pop();
+  renderLlamados(llamados);
+  flashScreen();
+  playChime();
+});
+
+// Carga inicial
+fetch('/api/estado')
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
+    if (data.servicios) renderServicios(data.servicios);
+    if (data.ultimosLlamados) renderLlamados(data.ultimosLlamados);
+  })
+  .catch(() => {});
+</script>
 </body>
 </html>
