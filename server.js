@@ -28,18 +28,28 @@ app.post('/api/login', (req, res) => {
   }
 });
 
-// Rutas principales (una sola entrada)
-// Rutas principales (ajustadas para archivos en la raíz)
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
-app.get('/asesor', (req, res) => res.sendFile(path.join(__dirname, 'asesor.html')));
-app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'pantalla.html')));
+// ====================== RUTAS PRINCIPALES ======================
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'login.html')));
+app.get('/asesor', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'asesor.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'admin.html')));
+app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'pantalla.html')));
 
-// Servir archivos estáticos desde la raíz
-app.use(express.static(__dirname));
+// API de login
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const users = {
+    "admin": { password: "admin123", redirect: "/pages/admin.html" },
+    "asesor01": { password: "1234", redirect: "/pages/asesor.html" }
+  };
 
-
+  const user = users[username];
+  if (user && user.password === password) {
+    res.json({ success: true, redirect: user.redirect });
+  } else {
+    res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
+  }
+});
 // ====================== ESTADO ======================
 let services = [];
 let queue = [];
