@@ -210,11 +210,11 @@ function finalizeCurrentTicket(status, notes='') {
 // ══════════════════════════════════════════════════════════════════════════════
 //  RUTAS PÁGINAS
 // ══════════════════════════════════════════════════════════════════════════════
-app.get('/',         (req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
-app.get('/cliente',  (req,res)=>res.sendFile(path.join(__dirname,'public','cliente.html')));
-app.get('/asesor',   (req,res)=>res.sendFile(path.join(__dirname,'public','asesor.html')));
-app.get('/admin',    (req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
-app.get('/pantalla', (req,res)=>res.sendFile(path.join(__dirname,'public','pantalla.html')));
+app.get('/',         (req,res)=>res.sendFile(path.join(__dirname,'pages','index.html')));
+app.get('/cliente',  (req,res)=>res.sendFile(path.join(__dirname,'pages','cliente.html')));
+app.get('/asesor',   (req,res)=>res.sendFile(path.join(__dirname,'pages','asesor.html')));
+app.get('/admin',    (req,res)=>res.sendFile(path.join(__dirname,'pages','admin.html')));
+app.get('/pantalla', (req,res)=>res.sendFile(path.join(__dirname,'pages','pantalla.html')));
 
 // Compatibilidad con rutas antiguas /pages/
 app.get('/pages/index.html',    (req,res)=>res.redirect('/'));
