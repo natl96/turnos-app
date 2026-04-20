@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración | Sistema de Turnos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Archivo', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    :root {
+      --primary: #EC0000;
+      --secondary: #0057B8;
+      --accent: #00B140;
+      --warning: #FF9800;
+    }
+
+    body {
+      background: #F5F5F5;
+    }
+
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .tab-button {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button.active {
+      color: var(--primary);
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border-left: 4px solid;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: var(--primary);">
+            <i class="fas fa-cog text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Administración</h1>
+            <p class="text-sm text-gray-500">Sistema de Gestión de Turnos</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <a href="/api/reportes.csv" class="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-all flex items-center gap-2 font-medium">
+            <i class="fas fa-download"></i>
+            <span class="hidden sm:inline">Descargar CSV</span>
+          </a>
+          <button onclick="location.reload()" class="p-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- DASHBOARD STATS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="stat-card fade-in" style="border-left-color: var(--secondary);">
+        <p class="text-sm text-gray-500 mb-2">Turnos en Espera</p>
+        <p class="text-4xl font-bold" id="stat-queue">0</p>
+        <p class="text-xs text-gray-400 mt-1">En cola ahora</p>
+      </div>
+      
+      <div class="stat-card fade-in" style="border-left-color: var(--accent); animation-delay: 0.1s;">
+        <p class="text-sm text-gray-500 mb-2">Atenciones Completadas</p>
+        <p class="text-4xl font-bold" id="stat-completed">0</p>
+        <p class="text-xs text-gray-400 mt-1">Hoy</p>
+      </div>
+      
+      <div class="stat-card fade-in" style="border-left-color: var(--primary); animation-delay: 0.2s;">
+        <p class="text-sm text-gray-500 mb-2">Tiempo Promedio Espera</p>
+        <p class="text-4xl font-bold"><span id="stat-wait">0</span> min</p>
+        <p class="text-xs text-gray-400 mt-1">Por turno</p>
+      </div>
+      
+      <div class="stat-card fade-in" style="border-left-color: var(--warning); animation-delay: 0.3s;">
+        <p class="text-sm text-gray-500 mb-2">Estado del Sistema</p>
+        <p class="text-2xl font-bold" id="stat-status">Normal</p>
+        <p class="text-xs text-gray-400 mt-1" id="stat-status-desc">Sin congestión</p>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="card mb-6">
+      <div class="flex border-b">
+        <button onclick="showTab(0)" class="tab-button active px-8 py-4 text-lg font-semibold">
+          <i class="fas fa-list mr-2"></i>Servicios
+        </button>
+        <button onclick="showTab(1)" class="tab-button px-8 py-4 text-lg font-semibold">
+          <i class="fas fa-comment-alt mr-2"></i>Mensajes
+        </button>
+        <button onclick="showTab(2)" class="tab-button px-8 py-4 text-lg font-semibold">
+          <i class="fas fa-chart-bar mr-2"></i>Reportes
+        </button>
+        <button onclick="showTab(3)" class="tab-button px-8 py-4 text-lg font-semibold">
+          <i class="fas fa-history mr-2"></i>Histórico
+        </button>
+      </div>
+
+      <!-- TAB 0: SERVICIOS -->
+      <div id="tab-0" class="p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold">Gestión de Servicios</h2>
+          <button onclick="showAddServiceModal()" class="px-6 py-3 rounded-xl font-semibold text-white" style="background: var(--primary);">
+            <i class="fas fa-plus mr-2"></i>
+            Nuevo Servicio
+          </button>
+        </div>
+        
+        <div id="services-list" class="space-y-4"></div>
+      </div>
+
+      <!-- TAB 1: MENSAJES -->
+      <div id="tab-1" class="p-8 hidden">
+        <h2 class="text-2xl font-bold mb-6">Mensajes de Pantalla de Espera</h2>
+        
+        <p class="text-gray-600 mb-4">
+          Configura los mensajes que se mostrarán en la pantalla de espera. 
+          Escribe un mensaje por línea.
+        </p>
+        
+        <textarea 
+          id="messages-textarea" 
+          rows="8" 
+          class="w-full border border-gray-300 rounded-xl p-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          placeholder="Mensaje 1&#10;Mensaje 2&#10;Mensaje 3"
+        ></textarea>
+        
+        <button onclick="saveMessages()" class="mt-4 px-8 py-3 rounded-xl font-semibold text-white" style="background: var(--accent);">
+          <i class="fas fa-save mr-2"></i>
+          Guardar Mensajes
+        </button>
+      </div>
+
+      <!-- TAB 2: REPORTES -->
+      <div id="tab-2" class="p-8 hidden">
+        <h2 class="text-2xl font-bold mb-6">Reportes y Estadísticas</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Atenciones por Estado</h3>
+            <canvas id="status-chart"></canvas>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Tiempos Promedio</h3>
+            <canvas id="times-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="card p-6">
+          <h3 class="font-bold mb-4">Turnos por Servicio</h3>
+          <canvas id="services-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- TAB 3: HISTÓRICO -->
+      <div id="tab-3" class="p-8 hidden">
+        <h2 class="text-2xl font-bold mb-6">Histórico de Atenciones</h2>
+        
+        <div id="history-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ADD SERVICE MODAL -->
+  <div id="add-service-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-8">
+      <h3 class="text-2xl font-bold mb-6">Nuevo Servicio</h3>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Nombre del servicio</label>
+          <input 
+            type="text" 
+            id="service-name" 
+            placeholder="Ej: Atención al Cliente"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Prefijo (2-4 letras)</label>
+          <input 
+            type="text" 
+            id="service-prefix" 
+            placeholder="Ej: AC"
+            maxlength="4"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] uppercase mono"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Tiempo estimado (minutos)</label>
+          <input 
+            type="number" 
+            id="service-time" 
+            value="5" 
+            min="1" 
+            max="60"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <button onclick="closeAddServiceModal()" class="py-3 rounded-xl font-medium border border-gray-300 hover:bg-gray-50">
+          Cancelar
+        </button>
+        <button onclick="confirmAddService()" class="py-3 rounded-xl font-semibold text-white" style="background: var(--primary);">
+          <i class="fas fa-plus mr-2"></i>
+          Crear Servicio
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT SERVICE MODAL -->
+  <div id="edit-service-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-8">
+      <h3 class="text-2xl font-bold mb-6">Editar Servicio</h3>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Nombre del servicio</label>
+          <input 
+            type="text" 
+            id="edit-service-name"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Prefijo</label>
+          <input 
+            type="text" 
+            id="edit-service-prefix"
+            maxlength="4"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] uppercase mono"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-700">Tiempo estimado (minutos)</label>
+          <input 
+            type="number" 
+            id="edit-service-time"
+            min="1" 
+            max="60"
+            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <button onclick="closeEditServiceModal()" class="py-3 rounded-xl font-medium border border-gray-300 hover:bg-gray-50">
+          Cancelar
+        </button>
+        <button onclick="confirmEditService()" class="py-3 rounded-xl font-semibold text-white" style="background: var(--secondary);">
+          <i class="fas fa-save mr-2"></i>
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentEditServiceId = null;
+    let statusChart, timesChart, servicesChart;
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        
+        // Update stats
+        document.getElementById('stat-queue').textContent = data.dashboard.queueTotal;
+        document.getElementById('stat-completed').textContent = data.dashboard.completedCount;
+        document.getElementById('stat-wait').textContent = data.dashboard.avgWaitMinutes;
+        
+        const statusEl = document.getElementById('stat-status');
+        const statusDescEl = document.getElementById('stat-status-desc');
+        if (data.dashboard.congestion) {
+          statusEl.textContent = 'Congestión';
+          statusEl.style.color = 'var(--warning)';
+          statusDescEl.textContent = 'Alta demanda';
+        } else {
+          statusEl.textContent = 'Normal';
+          statusEl.style.color = 'var(--accent)';
+          statusDescEl.textContent = 'Sin congestión';
+        }
+        
+        // Load services
+        loadServices(data.services);
+        
+        // Load messages
+        document.getElementById('messages-textarea').value = data.waitMessages.join('\n');
+        
+        // Load history
+        loadHistory(data.history);
+        
+        // Update charts if on reports tab
+        if (document.getElementById('tab-2').classList.contains('hidden') === false) {
+          updateCharts(data);
+        }
+        
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('❌ Error al cargar datos del dashboard');
+      }
+    }
+
+    function loadServices(services) {
+      const container = document.getElementById('services-list');
+      
+      container.innerHTML = services.map(s => `
+        <div class="card p-6 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl" style="background: ${s.color}20; color: ${s.color};">
+              <i class="fas fa-briefcase"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="font-bold text-xl">${s.name}</span>
+                <span class="mono px-3 py-1 rounded-full text-sm font-semibold" style="background: ${s.color}20; color: ${s.color};">
+                  ${s.prefix}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mt-1">
+                <i class="far fa-clock mr-1"></i>
+                ~${s.estimatedMinutes} minutos
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button 
+              onclick="editService('${s.id}')" 
+              class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100"
+              title="Editar"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              onclick="deleteService('${s.id}')" 
+              class="px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50"
+              title="Eliminar"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadHistory(history) {
+      const container = document.getElementById('history-list');
+      
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div class="card p-12 text-center">
+            <div class="text-6xl mb-4">📊</div>
+            <p class="text-xl text-gray-400">No hay histórico aún</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = history.slice().reverse().slice(0, 50).map(t => {
+        const statusColors = {
+          'Finalizado': 'bg-green-100 text-green-800',
+          'Ausente': 'bg-orange-100 text-orange-800',
+          'Cancelado': 'bg-red-100 text-red-800'
+        };
+        
+        return `
+          <div class="card p-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="mono text-lg font-bold text-gray-900">${t.id}</div>
+              <div>
+                <div class="font-semibold">${t.serviceName}</div>
+                <div class="text-xs text-gray-500">
+                  ${new Date(t.queueEnteredAt).toLocaleString('es-CO')} | 
+                  ${t.channel} | 
+                  ${t.moduleNumber || 'N/A'}
+                </div>
+              </div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColors[t.status] || 'bg-gray-100 text-gray-800'}">
+              ${t.status}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showTab(index) {
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${index}`).classList.remove('hidden');
+      
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-button')[index].classList.add('active');
+      
+      if (index === 2) {
+        loadDashboard().then(async () => {
+          const res = await fetch('/api/estado');
+          const data = await res.json();
+          updateCharts(data);
+        });
+      }
+    }
+
+    function updateCharts(data) {
+      // Status Chart
+      const statusCounts = {
+        'Finalizado': data.history.filter(t => t.status === 'Finalizado').length,
+        'Ausente': data.history.filter(t => t.status === 'Ausente').length,
+        'Cancelado': data.history.filter(t => t.status === 'Cancelado').length
+      };
+      
+      if (statusChart) statusChart.destroy();
+      const statusCtx = document.getElementById('status-chart').getContext('2d');
+      statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(statusCounts),
+          datasets: [{
+            data: Object.values(statusCounts),
+            backgroundColor: ['#00B140', '#FF9800', '#EC0000']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+      
+      // Times Chart
+      if (timesChart) timesChart.destroy();
+      const timesCtx = document.getElementById('times-chart').getContext('2d');
+      timesChart = new Chart(timesCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Espera', 'Atención'],
+          datasets: [{
+            label: 'Minutos',
+            data: [data.dashboard.avgWaitMinutes, data.dashboard.avgAttentionMinutes],
+            backgroundColor: ['#0057B8', '#00B140']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+      
+      // Services Chart
+      const serviceCounts = {};
+      data.history.forEach(t => {
+        serviceCounts[t.serviceName] = (serviceCounts[t.serviceName] || 0) + 1;
+      });
+      
+      if (servicesChart) servicesChart.destroy();
+      const servicesCtx = document.getElementById('services-chart').getContext('2d');
+      servicesChart = new Chart(servicesCtx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(serviceCounts),
+          datasets: [{
+            label: 'Atenciones',
+            data: Object.values(serviceCounts),
+            backgroundColor: data.services.map(s => s.color)
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    async function saveMessages() {
+      const messages = document.getElementById('messages-textarea').value.split('\n').filter(Boolean);
+      
+      if (messages.length === 0) {
+        alert('❌ Debes ingresar al menos un mensaje');
+        return;
+      }
+      
+      try {
+        await fetch('/api/mensajes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages })
+        });
+        
+        alert('✅ Mensajes guardados correctamente');
+        loadDashboard();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al guardar mensajes');
+      }
+    }
+
+    function showAddServiceModal() {
+      document.getElementById('service-name').value = '';
+      document.getElementById('service-prefix').value = '';
+      document.getElementById('service-time').value = '5';
+      document.getElementById('add-service-modal').classList.remove('hidden');
+    }
+
+    function closeAddServiceModal() {
+      document.getElementById('add-service-modal').classList.add('hidden');
+    }
+
+    async function confirmAddService() {
+      const name = document.getElementById('service-name').value.trim();
+      const prefix = document.getElementById('service-prefix').value.trim().toUpperCase();
+      const estimatedMinutes = parseInt(document.getElementById('service-time').value);
+      
+      if (!name) {
+        alert('❌ Ingresa el nombre del servicio');
+        return;
+      }
+      
+      if (!prefix || prefix.length < 2) {
+        alert('❌ El prefijo debe tener al menos 2 caracteres');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/servicios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, prefix, estimatedMinutes })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Servicio creado correctamente');
+          closeAddServiceModal();
+          loadDashboard();
+        } else {
+          alert('❌ ' + (data.message || 'Error al crear servicio'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión');
+      }
+    }
+
+    async function editService(serviceId) {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        const service = data.services.find(s => s.id === serviceId);
+        
+        if (!service) return;
+        
+        currentEditServiceId = serviceId;
+        document.getElementById('edit-service-name').value = service.name;
+        document.getElementById('edit-service-prefix').value = service.prefix;
+        document.getElementById('edit-service-time').value = service.estimatedMinutes;
+        document.getElementById('edit-service-modal').classList.remove('hidden');
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    function closeEditServiceModal() {
+      document.getElementById('edit-service-modal').classList.add('hidden');
+      currentEditServiceId = null;
+    }
+
+    async function confirmEditService() {
+      if (!currentEditServiceId) return;
+      
+      const name = document.getElementById('edit-service-name').value.trim();
+      const prefix = document.getElementById('edit-service-prefix').value.trim().toUpperCase();
+      const estimatedMinutes = parseInt(document.getElementById('edit-service-time').value);
+      
+      if (!name) {
+        alert('❌ Ingresa el nombre del servicio');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/servicios/${currentEditServiceId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, prefix, estimatedMinutes })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Servicio actualizado correctamente');
+          closeEditServiceModal();
+          loadDashboard();
+        } else {
+          alert('❌ ' + (data.message || 'Error al actualizar'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión');
+      }
+    }
+
+    async function deleteService(serviceId) {
+      if (!confirm('¿Seguro que deseas eliminar este servicio? Esta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/servicios/${serviceId}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Servicio eliminado correctamente');
+          loadDashboard();
+        } else {
+          alert('❌ ' + (data.message || 'Error al eliminar'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión');
+      }
+    }
+
+    window.onload = loadDashboard;
+    setInterval(loadDashboard, 10000);
+  </script>
+
+</body>
+</html>

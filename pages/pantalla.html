@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla de Espera | Sistema de Turnos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Archivo', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    :root {
+      --primary: #EC0000;
+      --accent: #00B140;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+      overflow: hidden;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .slide-in {
+      animation: slideIn 0.5s ease;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    .message-scroll {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .message-scroll p {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll 20s linear infinite;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- HEADER -->
+  <header class="bg-black/50 backdrop-blur-lg border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center">
+            <svg class="w-10 h-10" viewBox="0 0 24 24" fill="var(--primary)">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-4xl font-bold">Sistema de Turnos</h1>
+            <p class="text-gray-400">Pantalla de Espera | Santander</p>
+          </div>
+        </div>
+        
+        <div class="text-right">
+          <div id="clock" class="text-4xl font-bold mono"></div>
+          <div id="date" class="text-gray-400"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto px-8 py-12">
+    
+    <!-- Current Calls -->
+    <div class="mb-12">
+      <h2 class="text-3xl font-bold mb-8 text-center">
+        <span style="color: var(--accent);">●</span> Turnos Llamados Recientemente
+      </h2>
+      
+      <div id="recent-calls" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <!-- Queue Status -->
+    <div class="grid grid-cols-3 gap-6 mb-12">
+      <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 text-center">
+        <p class="text-gray-400 mb-2">Turnos en Espera</p>
+        <p class="text-6xl font-bold" id="queue-count">0</p>
+      </div>
+      
+      <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 text-center">
+        <p class="text-gray-400 mb-2">Tiempo Promedio</p>
+        <p class="text-6xl font-bold"><span id="avg-wait">0</span> min</p>
+      </div>
+      
+      <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 text-center">
+        <p class="text-gray-400 mb-2">Atenciones Hoy</p>
+        <p class="text-6xl font-bold" id="completed-count">0</p>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 message-scroll">
+      <p id="messages" class="text-xl text-gray-300"></p>
+    </div>
+
+  </main>
+
+  <!-- Audio for notifications -->
+  <audio id="notification-sound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE" type="audio/wav">
+  </audio>
+
+  <script>
+    let lastCallId = null;
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('es-CO');
+      document.getElementById('date').textContent = now.toLocaleDateString('es-CO', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+
+    async function loadWaitingScreen() {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        
+        // Update stats
+        document.getElementById('queue-count').textContent = data.dashboard.queueTotal;
+        document.getElementById('avg-wait').textContent = data.dashboard.avgWaitMinutes;
+        document.getElementById('completed-count').textContent = data.dashboard.completedCount;
+        
+        // Update recent calls
+        const container = document.getElementById('recent-calls');
+        
+        if (data.recentCalls && data.recentCalls.length > 0) {
+          // Check for new calls and play sound
+          if (lastCallId && data.recentCalls[0].id !== lastCallId) {
+            playNotificationSound();
+          }
+          lastCallId = data.recentCalls[0].id;
+          
+          container.innerHTML = data.recentCalls.map((call, i) => `
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center slide-in ${i === 0 ? 'pulse' : ''}" style="animation-delay: ${i * 0.1}s;">
+              <div class="text-7xl font-bold mono mb-4" style="color: var(--accent);">
+                ${call.number}
+              </div>
+              <div class="text-2xl font-semibold mb-2">${call.serviceName}</div>
+              <div class="text-lg text-gray-400">
+                Módulo ${call.moduleNumber}
+              </div>
+              <div class="mt-4 text-sm text-gray-500">
+                ${new Date(call.timestamp).toLocaleTimeString('es-CO')}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `
+            <div class="col-span-3 text-center py-16">
+              <div class="text-8xl mb-4">⏳</div>
+              <p class="text-3xl text-gray-400">En espera de turnos...</p>
+            </div>
+          `;
+        }
+        
+        // Update messages
+        const messagesEl = document.getElementById('messages');
+        if (data.waitMessages && data.waitMessages.length > 0) {
+          messagesEl.textContent = data.waitMessages.join('  •  ');
+        } else {
+          messagesEl.textContent = 'Bienvenido al sistema de turnos. Por favor espere su turno.';
+        }
+        
+      } catch (error) {
+        console.error('Error loading waiting screen:', error);
+      }
+    }
+
+    function playNotificationSound() {
+      const audio = document.getElementById('notification-sound');
+      audio.play().catch(err => console.log('Audio play failed:', err));
+    }
+
+    // Initialize
+    updateClock();
+    setInterval(updateClock, 1000);
+    
+    loadWaitingScreen();
+    setInterval(loadWaitingScreen, 3000);
+  </script>
+
+</body>
+</html>

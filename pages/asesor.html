@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo Asesor | Sistema de Turnos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Archivo', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    :root {
+      --primary: #EC0000;
+      --secondary: #0057B8;
+      --accent: #00B140;
+      --warning: #FF9800;
+      --dark: #1A1A1A;
+    }
+
+    body {
+      background: #0F0F0F;
+    }
+
+    .btn {
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .slide-down {
+      animation: slideDown 0.3s ease;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <div class="flex h-screen overflow-hidden">
+    
+    <!-- SIDEBAR -->
+    <aside class="w-80 bg-black border-r border-white/10 flex flex-col">
+      <div class="p-8 border-b border-white/10">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="var(--primary)">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold">Módulo Asesor</h1>
+            <p class="text-xs text-gray-500">Sistema de Turnos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGIN PANEL -->
+      <div id="login-panel" class="p-8 flex-1 flex flex-col justify-center">
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold mb-2">Iniciar sesión</h2>
+          <p class="text-gray-400 text-sm">Ingresa tu número de módulo</p>
+        </div>
+        
+        <input 
+          id="module-input" 
+          type="text" 
+          placeholder="Ej: 05" 
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-lg mono focus:outline-none focus:border-[var(--primary)] transition-all mb-4"
+        >
+        
+        <button 
+          onclick="login()" 
+          class="w-full py-4 rounded-xl font-semibold btn text-white"
+          style="background: var(--primary);"
+        >
+          <i class="fas fa-sign-in-alt mr-2"></i>
+          Ingresar al Módulo
+        </button>
+      </div>
+
+      <!-- ADVISOR PANEL -->
+      <div id="advisor-panel" class="hidden flex-1 flex flex-col p-8">
+        <div class="mb-8">
+          <p class="text-xs text-gray-500 mb-1">MÓDULO ACTIVO</p>
+          <div class="flex items-center justify-between">
+            <div class="text-5xl font-bold mono" style="color: var(--accent);" id="module-show"></div>
+            <button 
+              id="pause-btn"
+              onclick="togglePause()" 
+              class="px-4 py-2 rounded-xl text-sm font-medium btn"
+              style="background: var(--warning);"
+            >
+              <i class="fas fa-pause mr-2"></i><span id="pause-text">Pausa</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Service Selection -->
+        <div class="mb-6 glass rounded-xl p-4">
+          <p class="text-xs text-gray-400 mb-3">SERVICIOS QUE ATIENDO</p>
+          <div id="service-checks" class="space-y-2"></div>
+        </div>
+
+        <!-- Call Next Button -->
+        <button 
+          onclick="callNext()" 
+          class="mb-4 py-8 rounded-xl text-2xl font-bold btn text-white flex items-center justify-center gap-3"
+          style="background: var(--accent);"
+        >
+          <i class="fas fa-bell text-3xl"></i>
+          LLAMAR SIGUIENTE
+        </button>
+
+        <!-- Actions Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button onclick="recallCurrent()" class="glass py-4 rounded-xl font-medium hover:bg-white/10 btn">
+            <i class="fas fa-redo mr-2"></i>
+            Rellamar
+          </button>
+          <button onclick="finishCurrent()" class="glass py-4 rounded-xl font-medium hover:bg-white/10 btn">
+            <i class="fas fa-check mr-2"></i>
+            Finalizar
+          </button>
+          <button onclick="markAbsent()" class="py-4 rounded-xl font-medium btn" style="background: var(--warning);">
+            <i class="fas fa-user-times mr-2"></i>
+            Ausente
+          </button>
+          <button onclick="showTransferModal()" class="glass py-4 rounded-xl font-medium hover:bg-white/10 btn">
+            <i class="fas fa-exchange-alt mr-2"></i>
+            Transferir
+          </button>
+        </div>
+
+        <div class="text-center">
+          <button onclick="logout()" class="text-sm text-gray-500 hover:text-white transition-colors">
+            <i class="fas fa-sign-out-alt mr-2"></i>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 overflow-auto">
+      <!-- Current Ticket -->
+      <div id="current-ticket" class="hidden bg-gradient-to-br from-gray-900 to-black border-b border-white/10 p-8 slide-down">
+        <div class="max-w-5xl mx-auto">
+          <p class="text-xs text-gray-500 mb-2">EN ATENCIÓN AHORA</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-7xl font-bold mono mb-2" style="color: var(--accent);" id="current-number"></div>
+              <div class="text-2xl font-semibold" id="current-service"></div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-500 mb-2">Llamados</p>
+              <div class="text-6xl font-black" style="color: var(--warning);" id="call-count">0</div>
+            </div>
+          </div>
+          
+          <div class="mt-6 grid grid-cols-3 gap-4">
+            <div class="glass rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Canal</p>
+              <p class="font-semibold capitalize" id="current-channel">-</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Ingresó</p>
+              <p class="font-semibold mono text-sm" id="current-time">-</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+              <p class="text-xs text-gray-500 mb-1">Tiempo en atención</p>
+              <p class="font-semibold" id="attention-time">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue -->
+      <div class="p-8">
+        <div class="max-w-5xl mx-auto">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-3xl font-bold">Cola de Espera</h2>
+              <p class="text-gray-500">Turnos pendientes para tus servicios</p>
+            </div>
+            <button onclick="refreshQueue()" class="glass px-4 py-2 rounded-xl hover:bg-white/10">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+          
+          <div id="queue-container" class="space-y-3"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FINISH MODAL -->
+  <div id="finish-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 rounded-2xl max-w-lg w-full p-8">
+      <h3 class="text-2xl font-bold mb-6">Finalizar Atención</h3>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">Notas de atención (opcional)</label>
+        <textarea 
+          id="finish-notes" 
+          rows="4" 
+          placeholder="Describe brevemente el resultado de la atención..."
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-[var(--primary)] resize-none"
+        ></textarea>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeFinishModal()" class="py-3 rounded-xl font-medium glass hover:bg-white/10">
+          Cancelar
+        </button>
+        <button onclick="confirmFinish()" class="py-3 rounded-xl font-semibold text-white" style="background: var(--accent);">
+          <i class="fas fa-check mr-2"></i>
+          Finalizar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSFER MODAL -->
+  <div id="transfer-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 rounded-2xl max-w-lg w-full p-8">
+      <h3 class="text-2xl font-bold mb-6">Transferir Turno</h3>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">Transferir a servicio</label>
+        <select 
+          id="transfer-service" 
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--primary)]"
+        >
+          <option value="">-- Selecciona --</option>
+        </select>
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">Nota de transferencia (opcional)</label>
+        <textarea 
+          id="transfer-notes" 
+          rows="3" 
+          placeholder="Razón de la transferencia..."
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-[var(--primary)] resize-none"
+        ></textarea>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeTransferModal()" class="py-3 rounded-xl font-medium glass hover:bg-white/10">
+          Cancelar
+        </button>
+        <button onclick="confirmTransfer()" class="py-3 rounded-xl font-semibold text-white" style="background: var(--secondary);">
+          <i class="fas fa-exchange-alt mr-2"></i>
+          Transferir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isLoggedIn = false;
+    let currentAttentionStartTime = null;
+    let attentionTimer = null;
+    let allServices = [];
+
+    async function login() {
+      const moduleNumber = document.getElementById('module-input').value.trim();
+      if (!moduleNumber) {
+        alert('❌ Ingresa tu número de módulo');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/asesor/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ moduleNumber })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          isLoggedIn = true;
+          document.getElementById('login-panel').classList.add('hidden');
+          document.getElementById('advisor-panel').classList.remove('hidden');
+          document.getElementById('module-show').textContent = moduleNumber;
+          
+          await loadServiceChecks();
+          loadAdvisorData();
+          setInterval(loadAdvisorData, 2000);
+        } else {
+          alert('❌ ' + (data.message || 'Error al iniciar sesión'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión');
+      }
+    }
+
+    function logout() {
+      if (confirm('¿Seguro que deseas cerrar sesión?')) {
+        location.reload();
+      }
+    }
+
+    async function loadServiceChecks() {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        allServices = data.services;
+        
+        const container = document.getElementById('service-checks');
+        container.innerHTML = data.services.map(s => `
+          <label class="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors">
+            <input 
+              type="checkbox" 
+              value="${s.id}" 
+              ${data.advisor.serviceIds.includes(s.id) ? 'checked' : ''}
+              onchange="updateServices()"
+              class="w-4 h-4 rounded accent-red-600"
+            >
+            <span class="text-sm">${s.name}</span>
+          </label>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    }
+
+    async function updateServices() {
+      const checkboxes = document.querySelectorAll('#service-checks input[type="checkbox"]');
+      const serviceIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      
+      if (serviceIds.length === 0) {
+        alert('❌ Debes seleccionar al menos un servicio');
+        await loadServiceChecks();
+        return;
+      }
+      
+      try {
+        await fetch('/api/asesor/servicios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ serviceIds })
+        });
+        loadAdvisorData();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function loadAdvisorData() {
+      if (!isLoggedIn) return;
+      
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        
+        // Update current ticket
+        const currentPanel = document.getElementById('current-ticket');
+        if (data.turnoActual) {
+          currentPanel.classList.remove('hidden');
+          document.getElementById('current-number').textContent = data.turnoActual.id;
+          document.getElementById('current-service').textContent = data.turnoActual.serviceName;
+          document.getElementById('call-count').textContent = data.turnoActual.callCount || 0;
+          document.getElementById('current-channel').textContent = data.turnoActual.channel || '-';
+          document.getElementById('current-time').textContent = new Date(data.turnoActual.queueEnteredAt).toLocaleTimeString('es-CO');
+          
+          if (!currentAttentionStartTime) {
+            currentAttentionStartTime = new Date(data.turnoActual.attentionStartedAt || data.turnoActual.queueEnteredAt);
+            updateAttentionTime();
+            if (!attentionTimer) {
+              attentionTimer = setInterval(updateAttentionTime, 1000);
+            }
+          }
+        } else {
+          currentPanel.classList.add('hidden');
+          currentAttentionStartTime = null;
+          if (attentionTimer) {
+            clearInterval(attentionTimer);
+            attentionTimer = null;
+          }
+        }
+        
+        // Update pause button
+        const pauseBtn = document.getElementById('pause-btn');
+        const pauseText = document.getElementById('pause-text');
+        if (data.advisor.paused) {
+          pauseBtn.style.background = 'var(--accent)';
+          pauseText.innerHTML = '<i class="fas fa-play mr-2"></i>Reanudar';
+        } else {
+          pauseBtn.style.background = 'var(--warning)';
+          pauseText.innerHTML = '<i class="fas fa-pause mr-2"></i>Pausa';
+        }
+        
+        // Update queue
+        const container = document.getElementById('queue-container');
+        const myQueue = data.enEspera.filter(t => data.advisor.serviceIds.includes(t.serviceId));
+        
+        if (myQueue.length > 0) {
+          container.innerHTML = myQueue.map(t => `
+            <div class="glass rounded-xl p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+              <div class="flex items-center gap-6">
+                <div class="text-4xl font-bold mono" style="color: var(--accent);">${t.id}</div>
+                <div>
+                  <div class="text-lg font-semibold">${t.serviceName}</div>
+                  <div class="text-sm text-gray-500">
+                    <i class="far fa-clock mr-1"></i>
+                    ${t.estimatedWaitMinutes} min estimados
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-gray-500 mb-1">Personas delante</div>
+                <div class="text-3xl font-bold">${t.peopleAhead}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `
+            <div class="glass rounded-xl p-12 text-center">
+              <div class="text-6xl mb-4">✨</div>
+              <p class="text-xl text-gray-400">No hay turnos en espera</p>
+              <p class="text-sm text-gray-600 mt-2">Los nuevos turnos aparecerán aquí automáticamente</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading advisor data:', error);
+      }
+    }
+
+    function updateAttentionTime() {
+      if (!currentAttentionStartTime) return;
+      
+      const now = new Date();
+      const diff = Math.floor((now - currentAttentionStartTime) / 1000);
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+      
+      document.getElementById('attention-time').textContent = 
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    async function togglePause() {
+      try {
+        await fetch('/api/asesor/pausa', { method: 'POST' });
+        loadAdvisorData();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al cambiar estado de pausa');
+      }
+    }
+
+    async function callNext() {
+      try {
+        const res = await fetch('/api/llamar', { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          loadAdvisorData();
+        } else {
+          alert('❌ ' + (data.message || 'No hay turnos disponibles'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al llamar turno');
+      }
+    }
+
+    async function recallCurrent() {
+      try {
+        const res = await fetch('/api/rellamar', { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          loadAdvisorData();
+        } else {
+          alert('❌ ' + (data.message || 'Error'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al rellamar');
+      }
+    }
+
+    function finishCurrent() {
+      document.getElementById('finish-modal').classList.remove('hidden');
+      document.getElementById('finish-notes').focus();
+    }
+
+    function closeFinishModal() {
+      document.getElementById('finish-modal').classList.add('hidden');
+      document.getElementById('finish-notes').value = '';
+    }
+
+    async function confirmFinish() {
+      const notes = document.getElementById('finish-notes').value.trim();
+      
+      try {
+        const res = await fetch('/api/finalizar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          closeFinishModal();
+          loadAdvisorData();
+        } else {
+          alert('❌ ' + (data.message || 'Error'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al finalizar');
+      }
+    }
+
+    async function markAbsent() {
+      if (!confirm('¿Marcar este turno como ausente? Debe haberse llamado 3 veces.')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/ausencia', { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          loadAdvisorData();
+        } else {
+          alert('❌ ' + (data.message || 'Error'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al marcar ausencia');
+      }
+    }
+
+    function showTransferModal() {
+      const select = document.getElementById('transfer-service');
+      select.innerHTML = '<option value="">-- Selecciona --</option>' +
+        allServices.filter(s => s.active).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      
+      document.getElementById('transfer-modal').classList.remove('hidden');
+    }
+
+    function closeTransferModal() {
+      document.getElementById('transfer-modal').classList.add('hidden');
+      document.getElementById('transfer-notes').value = '';
+    }
+
+    async function confirmTransfer() {
+      const serviceId = document.getElementById('transfer-service').value;
+      const notes = document.getElementById('transfer-notes').value.trim();
+      
+      if (!serviceId) {
+        alert('❌ Selecciona un servicio');
+        return;
+      }
+      
+      alert('ℹ️ Funcionalidad de transferencia en desarrollo');
+      closeTransferModal();
+    }
+
+    function refreshQueue() {
+      loadAdvisorData();
+    }
+  </script>
+
+</body>
+</html>
