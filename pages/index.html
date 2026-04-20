@@ -3,179 +3,566 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Turnos PRO • Santander</title>
+  <title>Sistema de Turnos | Santander</title>
+<a href="/login" 
+   class="inline-flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-3xl font-semibold hover:bg-blue-50">
+  <i class="fa-solid fa-right-to-bracket"></i>
+  Iniciar sesión (Admin / Asesor)
+</a>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .ticket-number { font-size: 4.5rem; line-height: 1; font-weight: 700; letter-spacing: -4px; }
+    * { font-family: 'Archivo', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    :root {
+      --primary: #EC0000;
+      --primary-dark: #C00000;
+      --secondary: #0057B8;
+      --accent: #00B140;
+      --dark: #1A1A1A;
+      --light: #F5F5F5;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--dark) 0%, #2A2A2A 100%);
+      min-height: 100vh;
+    }
+
+    .service-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .service-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .service-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px -12px rgba(236, 0, 0, 0.3);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(236, 0, 0, 0.3);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-overlay {
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-content {
+      animation: slideUp 0.3s ease;
+    }
+
+    .ticket-number {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(236, 0, 0, 0.1);
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-blue-950 to-gray-900 text-white min-h-screen">
-
+<body class="text-white">
+  
   <!-- HEADER -->
-  <div class="bg-white/10 backdrop-blur-md border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-3xl">📋</div>
-        <div>
-          <h1 class="text-3xl font-bold">Turnos PRO</h1>
-          <p class="text-blue-200 text-sm">Santander • Gestión de turnos</p>
+  <header class="glass border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="var(--primary)">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Sistema de Turnos</h1>
+            <p class="text-sm text-gray-400">Santander | Gestión Inteligente</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <button onclick="toggleLanguage()" class="glass px-4 py-2 rounded-xl hover:bg-white/10 transition-all flex items-center gap-2">
+            <i class="fas fa-globe"></i>
+            <span id="lang-text" class="hidden sm:inline">ES</span>
+          </button>
+          <button onclick="showWaitingScreen()" class="glass px-4 py-2 rounded-xl hover:bg-white/10 transition-all flex items-center gap-2">
+            <i class="fas fa-tv"></i>
+            <span class="hidden sm:inline">Pantalla</span>
+          </button>
         </div>
       </div>
-
-      <!-- BOTÓN DE LOGIN MEJORADO -->
-      <a href="/login" 
-         class="flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition shadow-lg">
-        <i class="fa-solid fa-right-to-bracket text-xl"></i>
-        <span class="text-lg">Iniciar sesión (Admin / Asesor)</span>
-      </a>
     </div>
-  </div>
+  </header>
 
-  <div class="max-w-7xl mx-auto px-8 py-12">
-    <h2 class="text-5xl font-bold text-center mb-2">¿Qué servicio necesitas hoy?</h2>
-    <p class="text-center text-blue-200 mb-12 text-xl">Selecciona un servicio y obtén tu turno al instante</p>
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- VISTA CLIENTE -->
+    <div id="client-view">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
+          ¿Qué servicio <span style="color: var(--primary)">necesitas hoy?</span>
+        </h2>
+        <p class="text-lg sm:text-xl text-gray-400" id="subtitle">
+          Selecciona un servicio y recibe tu turno al instante
+        </p>
+      </div>
 
-    <!-- SERVICIOS -->
-    <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"></div>
+      <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
 
-    <!-- TICKET DIGITAL -->
-    <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-xl mx-auto">
-      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-        <i class="fa-solid fa-mobile-screen-button"></i> ¿Prefieres ticket digital?
-      </h3>
-      <form id="digital-form" class="space-y-6">
-        <input type="tel" id="phone" placeholder="Teléfono (opcional)" 
-               class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-5 text-white placeholder:text-white/50">
-        <input type="email" id="email" placeholder="Correo electrónico (opcional)" 
-               class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-5 text-white placeholder:text-white/50">
-        <button type="button" onclick="takeDigitalTicket()" 
-                class="w-full py-6 bg-emerald-500 hover:bg-emerald-600 text-xl font-semibold rounded-3xl">
-          Solicitar ticket digital
+      <div class="max-w-2xl mx-auto">
+        <div class="glass rounded-3xl p-8 sm:p-10">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);">
+              <i class="fas fa-mobile-alt text-white text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold">Ticket Digital</h3>
+          </div>
+          
+          <p class="text-gray-400 mb-6">Recibe tu turno por correo o SMS</p>
+          
+          <form id="digital-form" onsubmit="takeDigitalTicket(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">Selecciona el servicio</label>
+              <select id="digital-service" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[var(--primary)] transition-all">
+                <option value="">-- Selecciona --</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">Teléfono (opcional)</label>
+              <input 
+                type="tel" 
+                id="phone" 
+                pattern="[0-9]{10}" 
+                placeholder="3001234567" 
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 transition-all"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">Correo electrónico (opcional)</label>
+              <input 
+                type="email" 
+                id="email" 
+                placeholder="tu@email.com" 
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 transition-all"
+              >
+            </div>
+            
+            <button 
+              type="submit" 
+              class="w-full py-4 rounded-xl text-lg font-semibold btn-primary text-white">
+              <i class="fas fa-ticket-alt mr-2"></i>
+              Solicitar Ticket Digital
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA PANTALLA DE ESPERA -->
+    <div id="waiting-view" class="hidden">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold mb-4">Turnos Llamados</h2>
+        <p class="text-gray-400">Últimas atenciones realizadas</p>
+      </div>
+      
+      <div id="recent-calls" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+      
+      <div class="text-center">
+        <button onclick="hideWaitingScreen()" class="glass px-8 py-4 rounded-xl hover:bg-white/10 transition-all">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Volver a Solicitar Turno
         </button>
-      </form>
+      </div>
     </div>
-  </div>
+
+  </main>
 
   <!-- MODAL TICKET -->
-  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full mx-4 overflow-hidden">
-      <div class="p-10 text-center" id="ticket-content"></div>
-      <div class="flex border-t">
-        <button onclick="closeModal()" class="flex-1 py-6 text-lg font-medium text-gray-500">Cerrar</button>
-        <button onclick="closeModal()" class="flex-1 py-6 text-lg font-semibold bg-blue-600 text-white">Nuevo turno</button>
+  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 modal-overlay flex items-center justify-center z-50 p-4">
+    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full overflow-hidden modal-content">
+      <div class="p-8 sm:p-12">
+        <div id="ticket-content"></div>
+      </div>
+      
+      <div class="grid grid-cols-2 border-t border-gray-200">
+        <button onclick="cancelTicket()" class="py-4 text-gray-600 hover:bg-gray-50 transition-all font-medium">
+          <i class="fas fa-times mr-2"></i>Cancelar
+        </button>
+        <button onclick="closeTicketModal()" class="py-4 font-semibold text-white transition-all" style="background: var(--primary);">
+          <i class="fas fa-check mr-2"></i>Aceptar
+        </button>
       </div>
     </div>
   </div>
 
   <script>
+    let language = 'es';
+    let currentTicketId = null;
+    let autoResetTimer = null;
+    
+    const translations = {
+      es: {
+        subtitle: "Selecciona un servicio y recibe tu turno al instante",
+        ticketTitle: "¡Tu turno está listo!",
+        ticketSubtitle: "Guarda esta información",
+        peopleAhead: "Personas delante",
+        estimatedTime: "Tiempo estimado",
+        minutes: "minutos",
+        scanQR: "Escanea el código QR para consultar tu turno",
+        selectService: "-- Selecciona --"
+      },
+      en: {
+        subtitle: "Choose a service and get your ticket instantly",
+        ticketTitle: "Your ticket is ready!",
+        ticketSubtitle: "Save this information",
+        peopleAhead: "People ahead",
+        estimatedTime: "Estimated time",
+        minutes: "minutes",
+        scanQR: "Scan the QR code to track your ticket",
+        selectService: "-- Select --"
+      }
+    };
+
     async function loadServices() {
       try {
         const res = await fetch('/api/estado');
         const data = await res.json();
-
+        
         const grid = document.getElementById('services-grid');
-        grid.innerHTML = data.services
-          .filter(s => s.active)
-          .map(s => `
-            <div onclick="takeTicket('${s.id}', '${s.name}')" 
-                 class="bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center hover:shadow-2xl transition">
-              <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-5xl" 
-                   style="background: ${s.color}20; color: ${s.color}">📌</div>
-              <h3 class="text-2xl font-semibold">${s.name}</h3>
-              <p class="text-gray-500 mt-2">${s.estimatedMinutes} minutos aprox.</p>
+        const select = document.getElementById('digital-service');
+        
+        const activeServices = data.services.filter(s => s.active);
+        
+        grid.innerHTML = activeServices.map((s, i) => `
+          <div 
+            onclick="takeTicket('${s.id}', '${s.name}')" 
+            class="service-card bg-white text-gray-900 rounded-2xl p-8 cursor-pointer"
+            style="animation: slideUp 0.3s ease ${i * 0.1}s backwards;"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style="background: ${s.color}20; color: ${s.color};">
+                <i class="fas fa-briefcase"></i>
+              </div>
+              <span class="badge mono" style="background: ${s.color}20; color: ${s.color};">
+                ${s.prefix}
+              </span>
             </div>
-          `).join('');
-      } catch (e) {
-        console.error("Error cargando servicios", e);
+            
+            <h3 class="text-2xl font-bold mb-2">${s.name}</h3>
+            <p class="text-gray-600 flex items-center gap-2">
+              <i class="far fa-clock"></i>
+              ~${s.estimatedMinutes} min
+            </p>
+          </div>
+        `).join('');
+        
+        select.innerHTML = `
+          <option value="">${translations[language].selectService}</option>
+          ${activeServices.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        `;
+        
+      } catch (error) {
+        console.error('Error loading services:', error);
+        alert('❌ No se pudieron cargar los servicios. Por favor, recarga la página.');
       }
     }
 
     async function takeTicket(serviceId, serviceName) {
-      if (!confirm(`¿Deseas tomar un turno para ${serviceName}?`)) return;
-
       try {
         const res = await fetch('/api/turnos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            serviceId: serviceId,
-            channel: 'kiosco',
-            deliveryType: 'impreso'
+          body: JSON.stringify({ 
+            serviceId, 
+            channel: 'kiosco', 
+            deliveryType: 'impreso',
+            language
           })
         });
-
+        
         const result = await res.json();
+        
         if (result.success) {
-          showTicketModal(result.ticket, serviceName);
+          showTicket(result.ticket, serviceName);
         } else {
-          alert(result.message || 'No se pudo generar el ticket');
+          alert('❌ ' + (result.message || 'Error al generar el turno'));
         }
-      } catch (e) {
-        alert('Error de conexión. Intenta nuevamente.');
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión. Intenta nuevamente.');
       }
     }
 
-    async function takeDigitalTicket() {
+    async function takeDigitalTicket(event) {
+      event.preventDefault();
+      
+      const serviceId = document.getElementById('digital-service').value;
       const phone = document.getElementById('phone').value.trim();
       const email = document.getElementById('email').value.trim();
-
-      if (!phone && !email) {
-        alert('Ingresa al menos teléfono o correo para ticket digital');
+      
+      if (!serviceId) {
+        alert(language === 'es' ? '❌ Selecciona un servicio' : '❌ Select a service');
         return;
       }
-
+      
+      if (!phone && !email) {
+        alert(language === 'es' ? '❌ Ingresa al menos teléfono o correo' : '❌ Enter phone or email');
+        return;
+      }
+      
+      if (phone && !/^[0-9]{10}$/.test(phone)) {
+        alert(language === 'es' ? '❌ Teléfono inválido (10 dígitos)' : '❌ Invalid phone (10 digits)');
+        return;
+      }
+      
       try {
         const res = await fetch('/api/turnos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            serviceId: 'cuentas',
-            channel: 'web',
-            deliveryType: 'digital',
-            phone: phone,
-            email: email
+          body: JSON.stringify({ 
+            serviceId, 
+            channel: 'web', 
+            deliveryType: 'digital', 
+            phone, 
+            email,
+            language
           })
         });
-
+        
         const result = await res.json();
+        
         if (result.success) {
-          showTicketModal(result.ticket, 'Ticket Digital');
+          const service = await getServiceName(serviceId);
+          showTicket(result.ticket, service);
+          document.getElementById('digital-form').reset();
         } else {
-          alert(result.message || 'No se pudo generar el ticket');
+          alert('❌ ' + (result.message || 'Error al generar el turno'));
         }
-      } catch (e) {
-        alert('Error de conexión. Intenta nuevamente.');
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión. Intenta nuevamente.');
       }
     }
 
-    function showTicketModal(ticket, serviceName) {
-      const modal = document.getElementById('ticket-modal');
-      const content = document.getElementById('ticket-content');
-
-      content.innerHTML = `
-        <h2 class="text-4xl font-bold text-emerald-600 mb-4">¡Tu turno!</h2>
-        <div class="ticket-number text-blue-600 mb-6">${ticket.id}</div>
-        <p class="text-2xl mb-8">${serviceName}</p>
-        <div class="bg-gray-100 rounded-2xl p-6 text-left">
-          <p class="text-sm text-gray-500">Personas delante</p>
-          <p class="font-bold text-4xl">${ticket.peopleAhead}</p>
-          <p class="text-sm text-gray-500 mt-6">Tiempo estimado</p>
-          <p class="font-bold text-4xl">${ticket.estimatedWaitMinutes} minutos</p>
-        </div>
-      `;
-      modal.classList.remove('hidden');
+    async function getServiceName(serviceId) {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        const service = data.services.find(s => s.id === serviceId);
+        return service ? service.name : 'Servicio';
+      } catch {
+        return 'Servicio';
+      }
     }
 
-    function closeModal() {
+    function showTicket(ticket, serviceName) {
+      currentTicketId = ticket.id;
+      const modal = document.getElementById('ticket-modal');
+      const content = document.getElementById('ticket-content');
+      const t = translations[language];
+      
+      const qrCanvas = document.createElement('canvas');
+      QRCode.toCanvas(qrCanvas, `${window.location.origin}/turno/${ticket.id}`, {
+        width: 200,
+        margin: 1,
+        color: { dark: '#1A1A1A', light: '#FFFFFF' }
+      });
+      
+      content.innerHTML = `
+        <div class="text-center">
+          <div class="inline-block p-3 rounded-2xl mb-4" style="background: var(--accent);">
+            <i class="fas fa-check text-white text-3xl"></i>
+          </div>
+          
+          <h2 class="text-3xl font-bold mb-2">${t.ticketTitle}</h2>
+          <p class="text-gray-500 mb-6">${t.ticketSubtitle}</p>
+          
+          <div class="ticket-number mono mb-6">${ticket.id}</div>
+          
+          <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+            <p class="text-xl font-semibold mb-1">${serviceName}</p>
+            <p class="text-sm text-gray-500">${new Date(ticket.queueEnteredAt).toLocaleString('es-CO')}</p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <p class="text-sm text-gray-500 mb-1">${t.peopleAhead}</p>
+              <p class="text-3xl font-bold" style="color: var(--secondary);">${ticket.peopleAhead}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <p class="text-sm text-gray-500 mb-1">${t.estimatedTime}</p>
+              <p class="text-3xl font-bold" style="color: var(--primary);">${ticket.estimatedWaitMinutes}</p>
+              <p class="text-xs text-gray-400">${t.minutes}</p>
+            </div>
+          </div>
+          
+          <div class="border-2 border-dashed border-gray-300 rounded-xl p-6">
+            <p class="text-sm text-gray-600 mb-3">${t.scanQR}</p>
+            <div class="flex justify-center"></div>
+          </div>
+        </div>
+      `;
+      
+      content.querySelector('.flex.justify-center').appendChild(qrCanvas);
+      
+      modal.classList.remove('hidden');
+      
+      if (autoResetTimer) clearTimeout(autoResetTimer);
+      autoResetTimer = setTimeout(() => {
+        if (!modal.classList.contains('hidden')) closeTicketModal();
+      }, 15000);
+    }
+
+    function closeTicketModal() {
       document.getElementById('ticket-modal').classList.add('hidden');
+      currentTicketId = null;
+      if (autoResetTimer) clearTimeout(autoResetTimer);
       loadServices();
     }
 
-    // Cargar al iniciar
+    async function cancelTicket() {
+      if (!currentTicketId) return closeTicketModal();
+      
+      if (!confirm(language === 'es' ? '¿Seguro que deseas cancelar este turno?' : 'Are you sure you want to cancel this ticket?')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/turnos/${currentTicketId}/cancelar`, {
+          method: 'POST'
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          alert('✅ ' + (language === 'es' ? 'Turno cancelado correctamente' : 'Ticket cancelled successfully'));
+          closeTicketModal();
+        } else {
+          alert('❌ ' + (result.message || 'Error al cancelar'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error de conexión');
+      }
+    }
+
+    async function showWaitingScreen() {
+      document.getElementById('client-view').classList.add('hidden');
+      document.getElementById('waiting-view').classList.remove('hidden');
+      loadWaitingScreen();
+      setInterval(loadWaitingScreen, 4000);
+    }
+
+    async function loadWaitingScreen() {
+      try {
+        const res = await fetch('/api/estado');
+        const data = await res.json();
+        const container = document.getElementById('recent-calls');
+        
+        if (data.recentCalls && data.recentCalls.length > 0) {
+          container.innerHTML = data.recentCalls.map((call, i) => `
+            <div class="glass rounded-2xl p-8 text-center" style="animation: slideUp 0.3s ease ${i * 0.1}s backwards;">
+              <div class="text-6xl font-bold mb-4 mono" style="color: var(--accent);">
+                ${call.number}
+              </div>
+              <div class="text-xl font-semibold mb-2">${call.serviceName}</div>
+              <div class="text-sm text-gray-400">
+                <i class="fas fa-user-tie mr-2"></i>
+                Módulo ${call.moduleNumber}
+              </div>
+              <div class="mt-4 text-xs text-gray-500">
+                ${new Date(call.timestamp).toLocaleTimeString('es-CO')}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `
+            <div class="col-span-3 text-center py-12">
+              <div class="text-6xl mb-4">⏳</div>
+              <p class="text-xl text-gray-400">No hay turnos llamados aún</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading waiting screen:', error);
+      }
+    }
+
+    function hideWaitingScreen() {
+      document.getElementById('waiting-view').classList.add('hidden');
+      document.getElementById('client-view').classList.remove('hidden');
+    }
+
+    function toggleLanguage() {
+      language = language === 'es' ? 'en' : 'es';
+      document.getElementById('lang-text').textContent = language.toUpperCase();
+      document.getElementById('subtitle').textContent = translations[language].subtitle;
+      loadServices();
+    }
+
     window.onload = loadServices;
   </script>
+
 </body>
 </html>
