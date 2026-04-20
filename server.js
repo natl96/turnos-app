@@ -30,7 +30,7 @@ app.post('/api/login', (req, res) => {
 
 // ====================== RUTAS PRINCIPALES ======================
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'login.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'cliente.html')));
 app.get('/asesor', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'asesor.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'admin.html')));
 app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'pantalla.html')));
@@ -572,7 +572,7 @@ app.use((err, req, res, next) => {
 loadState();
 
 app.listen(PORT, () => {
-  console.log('🚀 Servidor de turnos PRO corriendo');
+  console.log('🚀 Servidor de turnosFlOW corriendo');
   console.log(`   → Cliente: http://localhost:${PORT}/`);
   console.log(`   → Asesor:  http://localhost:${PORT}/asesor`);
   console.log(`   → Admin:   http://localhost:${PORT}/admin`);
