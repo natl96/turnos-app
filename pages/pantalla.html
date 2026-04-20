@@ -19,7 +19,7 @@
     --muted: #4a5068;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  html, body { height: 100%; margin: 0; }
   body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
@@ -66,10 +66,13 @@
   }
   .logo span { color: var(--accent); }
   .clock {
-    font-size: 2rem; font-weight: 500;
+    font-size: 2.2rem; font-weight: 500;
     color: var(--accent); letter-spacing: .05em;
   }
-  .date-str { font-size: .75rem; color: var(--muted); text-align: right; margin-top: .1rem; }
+  .date-str { 
+    font-size: .78rem; color: var(--muted); 
+    text-align: right; margin-top: .1rem; 
+  }
 
   .main-area {
     display: grid;
@@ -88,7 +91,7 @@
   }
   .called-list {
     flex: 1; display: flex; flex-direction: column; gap: .75rem;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   .called-item {
@@ -98,35 +101,29 @@
     padding: 1.25rem 1.75rem;
     display: flex; align-items: center; gap: 1.5rem;
     position: relative; overflow: hidden;
-    transition: all .3s;
   }
   .called-item.new {
     border-color: var(--accent);
-    box-shadow: 0 0 30px rgba(0,212,170,.2), inset 0 0 20px rgba(0,212,170,.03);
-    animation: pulse-border 2s ease;
+    box-shadow: 0 0 30px rgba(0,212,170,.25);
+    animation: pulse 2s ease;
   }
-  @keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(0,212,170,.5); }
-    50% { box-shadow: 0 0 40px rgba(0,212,170,.3); }
-    100% { box-shadow: 0 0 30px rgba(0,212,170,.2); }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0,212,170,.6); }
+    70% { box-shadow: 0 0 0 15px rgba(0,212,170,0); }
   }
   .called-num {
     font-family: 'Syne', sans-serif;
-    font-size: 2.5rem; font-weight: 800;
+    font-size: 2.6rem; font-weight: 800;
     line-height: 1; letter-spacing: -2px;
     color: var(--accent);
-    min-width: 120px;
+    min-width: 130px;
   }
   .called-info { flex: 1; }
-  .called-srv { font-size: .8rem; color: var(--muted); margin-bottom: .2rem; }
-  .called-name { font-size: 1rem; font-weight: 500; }
+  .called-srv { font-size: .82rem; color: var(--muted); margin-bottom: .2rem; }
+  .called-name { font-size: 1.05rem; font-weight: 500; }
   .called-modulo {
-    font-size: .7rem; color: var(--muted);
-    display: flex; align-items: center; gap: .4rem; margin-top: .25rem;
-  }
-  .called-hora {
-    font-size: .8rem; color: var(--muted);
-    text-align: right;
+    font-size: .75rem; color: var(--muted);
+    display: flex; align-items: center; gap: .4rem;
   }
 
   .no-calls {
@@ -134,74 +131,43 @@
     align-items: center; justify-content: center;
     color: var(--muted); text-align: center; gap: 1rem;
   }
-  .no-calls-icon { font-size: 3rem; opacity: .3; }
+  .no-calls-icon { font-size: 3.5rem; opacity: .3; }
 
   .right-panel {
     display: flex; flex-direction: column; gap: 1rem;
-    min-height: 0;
   }
-
   .info-card {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 1.25rem;
+    padding: 1.5rem;
   }
   .ic-label {
-    font-size: .6rem; letter-spacing: .18em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: .75rem;
-  }
-
-  .srv-list { display: flex; flex-direction: column; gap: .6rem; }
-  .srv-row {
-    display: flex; align-items: center; gap: .75rem;
-  }
-  .srv-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .srv-name-label { font-size: .85rem; flex: 1; }
-  .srv-n {
-    font-family: 'Syne', sans-serif; font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--accent);
-  }
-
-  .total-display {
-    text-align: center;
+    font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: .8rem;
   }
   .total-num {
     font-family: 'Syne', sans-serif;
-    font-size: 3.5rem; font-weight: 800;
-    line-height: 1; color: var(--gold);
-    letter-spacing: -3px;
+    font-size: 3.8rem; font-weight: 800;
+    color: var(--gold); letter-spacing: -3px;
   }
-  .total-label { font-size: .7rem; color: var(--muted); margin-top: .25rem; }
 
   .bottom-bar {
-    display: flex; align-items: center; justify-content: space-between;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: .9rem 1.5rem;
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: .8rem;
   }
-  .bb-item { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted); }
-  .bb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-  .bb-dot.off { background: var(--muted); }
 
   .flash {
     position: fixed; inset: 0; z-index: 50;
-    background: rgba(0,212,170,.06);
-    border: 2px solid rgba(0,212,170,.3);
+    background: rgba(0,212,170,.08);
     pointer-events: none; opacity: 0;
-    transition: opacity .15s;
+    transition: opacity .2s;
   }
   .flash.show { opacity: 1; }
-
-  @media (max-width: 900px) {
-    .main-area { grid-template-columns: 1fr; }
-    .right-panel { display: none; }
-  }
 </style>
 </head>
 <body>
@@ -209,12 +175,12 @@
 <div class="flash" id="flash"></div>
 
 <div class="screen-wrap">
-  <!-- TOP BAR -->
+  <!-- TOP -->
   <div class="top-bar">
     <div>
       <div class="logo">Turno<span>Flow</span></div>
-      <div style="font-size:.65rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.2rem">
-        Pantalla de espera
+      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.2rem">
+        PANTALLA DE ESPERA
       </div>
     </div>
     <div>
@@ -223,11 +189,11 @@
     </div>
   </div>
 
-  <!-- MAIN AREA -->
+  <!-- MAIN -->
   <div class="main-area">
     <!-- LLAMADOS -->
     <div class="called-panel">
-      <div class="called-label">Últimos turnos llamados</div>
+      <div class="called-label">ÚLTIMOS TURNOS LLAMADOS</div>
       <div class="called-list" id="called-list">
         <div class="no-calls">
           <div class="no-calls-icon">🎫</div>
@@ -236,161 +202,150 @@
       </div>
     </div>
 
-    <!-- PANEL DERECHO -->
+    <!-- INFO DERECHA -->
     <div class="right-panel">
       <div class="info-card">
-        <div class="ic-label">Total en espera</div>
-        <div class="total-display">
-          <div class="total-num" id="total-espera">0</div>
-          <div class="total-label">personas en cola</div>
-        </div>
+        <div class="ic-label">TOTAL EN ESPERA</div>
+        <div class="total-num" id="total-espera">0</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:8px">personas en cola</div>
       </div>
-      <div class="info-card" style="flex:1;overflow:hidden">
-        <div class="ic-label">Cola por servicio</div>
+
+      <div class="info-card" style="flex:1">
+        <div class="ic-label">COLA POR SERVICIO</div>
         <div class="srv-list" id="srv-list">
-          <div style="font-size:.8rem;color:var(--muted)">Cargando…</div>
+          <!-- Se llena con JavaScript -->
         </div>
-      </div>
-      <div class="info-card">
-        <div class="ic-label">Sistema</div>
-        <div class="connection-status" id="conn-status">● Conectado en tiempo real</div>
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM BAR -->
+  <!-- BOTTOM -->
   <div class="bottom-bar">
-    <div class="bb-item">
-      <span class="bb-dot" id="live-dot"></span>
-      <span id="live-text">En vivo</span>
-    </div>
-    <div class="bb-item" style="font-size:.7rem;color:var(--muted)">
-      TurnoFlow · Sistema de Gestión de Turnos Omnicanal
-    </div>
-    <div class="bb-item">
-      <a href="/pages/cliente.html" style="color:var(--accent);text-decoration:none;font-size:.72rem">
-  Solicitar turno →
-</a>
-    </div>
+    <div>TurnoFlow • Sistema Omnicanal</div>
+    <div id="conn-status" style="color:var(--accent)">● En vivo</div>
+    <a href="/pages/cliente.html" style="color:var(--accent);text-decoration:none">Solicitar turno →</a>
   </div>
 </div>
 
 <script>
 const socket = io();
 
-let llamados = [];
-
-// RELOJ
+// ====================== RELOJ ======================
 function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('date-str').textContent = now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('clock').textContent = 
+    now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('date-str').textContent = 
+    now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 updateClock();
 setInterval(updateClock, 1000);
 
-// RENDER LLAMADOS
-function renderLlamados(data) {
-  llamados = data || [];
-  const el = document.getElementById('called-list');
-  if (!llamados.length) {
-    el.innerHTML = `
+// ====================== RENDER ======================
+function renderLlamados(llamados) {
+  const container = document.getElementById('called-list');
+  if (!llamados || llamados.length === 0) {
+    container.innerHTML = `
       <div class="no-calls">
         <div class="no-calls-icon">🎫</div>
         <p>Los turnos llamados aparecerán aquí</p>
       </div>`;
     return;
   }
-  el.innerHTML = llamados.slice(0, 5).map((item, i) => `
+
+  container.innerHTML = llamados.slice(0, 6).map((t, i) => `
     <div class="called-item ${i === 0 ? 'new' : ''}">
-      <div class="called-num">${item.id || item.codigo}</div>
+      <div class="called-num">${t.id || t.codigo}</div>
       <div class="called-info">
-        <div class="called-srv">${item.serviceName || '—'}</div>
-        <div class="called-name">${item.nombre || 'Cliente'}</div>
-        <div class="called-modulo">Diríjase al Módulo ${item.modulo || '—'}</div>
+        <div class="called-srv">${t.serviceName || t.servicioNombre || '—'}</div>
+        <div class="called-name">${t.nombre || 'Cliente'}</div>
+        <div class="called-modulo">Módulo ${t.modulo || '01'}</div>
       </div>
-      <div class="called-hora">${item.hora || new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})}</div>
+      <div class="called-hora">${t.hora || new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}</div>
     </div>
   `).join('');
 }
 
-function renderServicios(svcs) {
-  const max = Math.max(...(svcs || []).map(s => s.enEspera || 0), 1);
-  document.getElementById('srv-list').innerHTML = (svcs || []).map((s, i) => `
-    <div>
-      <div class="srv-row">
-        <div class="srv-dot" style="background:#00d4aa"></div>
-        <span class="srv-name-label">${s.nombre || s.name}</span>
-        <span class="srv-n">${s.enEspera || 0}</span>
+function renderServicios(servicios) {
+  const container = document.getElementById('srv-list');
+  if (!servicios || servicios.length === 0) {
+    container.innerHTML = '<div style="color:#666">Sin servicios activos</div>';
+    return;
+  }
+  container.innerHTML = servicios.map(s => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span>${s.name || s.nombre}</span>
+        <span style="font-weight:700;color:var(--accent)">${s.enEspera || s.esperando || 0}</span>
       </div>
     </div>
   `).join('');
 }
 
-// FLASH + SONIDO
+// ====================== EFECTOS ======================
 function flashScreen() {
-  const f = document.getElementById('flash');
-  f.classList.add('show');
-  setTimeout(() => f.classList.remove('show'), 300);
+  const flash = document.getElementById('flash');
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 400);
 }
 
 function playChime() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [523, 659, 784, 1047];
+    const notes = [659, 784, 880];
     notes.forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = freq;
-      g.gain.value = 0.25;
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + i * 0.15);
-      o.stop(ctx.currentTime + i * 0.15 + 0.3);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.value = 0.25;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + i * 0.12 + 0.25);
     });
   } catch(e) {}
 }
 
-// SOCKET
+// ====================== SOCKET ======================
 socket.on('connect', () => {
-  document.getElementById('conn-status').textContent = '● Conectado en tiempo real';
-  document.getElementById('live-dot').classList.remove('off');
+  console.log("✅ Pantalla conectada");
 });
 
-socket.on('disconnect', () => {
-  document.getElementById('conn-status').textContent = '○ Desconectado';
-  document.getElementById('live-dot').classList.add('off');
-});
-
-socket.on('estado', data => {
+socket.on('estado', (data) => {
   document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
-  renderServicios(data.servicios || []);
+  renderServicios(data.servicios || data.services || []);
 });
 
-socket.on('turno-llamado', data => {
-  const t = data.turno || data;
-  llamados.unshift({
-    id: t.id,
-    serviceName: t.serviceName,
-    nombre: t.nombre,
-    modulo: data.modulo || '01',
-    hora: new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})
-  });
-  if (llamados.length > 5) llamados.pop();
-  renderLlamados(llamados);
+socket.on('nuevo-turno', () => {
+  // Actualizar cuando se crea un ticket nuevo desde cliente
+  fetch('/api/estado')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('total-espera').textContent = data.totalEsperando || 0;
+      renderServicios(data.servicios || []);
+    });
+});
+
+socket.on('turno-llamado', (data) => {
   flashScreen();
   playChime();
+  fetch('/api/estado')
+    .then(r => r.json())
+    .then(data => {
+      renderLlamados(data.ultimosLlamados || []);
+    });
 });
 
-// Carga inicial
+// ====================== CARGA INICIAL ======================
 fetch('/api/estado')
   .then(r => r.json())
   .then(data => {
     document.getElementById('total-espera').textContent = data.totalEsperando || data.esperando || 0;
-    if (data.servicios) renderServicios(data.servicios);
-    if (data.ultimosLlamados) renderLlamados(data.ultimosLlamados);
+    renderServicios(data.servicios || data.services || []);
+    renderLlamados(data.ultimosLlamados || []);
   })
-  .catch(() => {});
+  .catch(err => console.log("Error carga inicial:", err));
 </script>
 </body>
 </html>
