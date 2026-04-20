@@ -7,135 +7,113 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="/socket.io/socket.io.js"></script>
 <style>
-  :root {
-    --ink: #0a0a0f;
-    --paper: #f5f3ee;
-    --accent: #f4a261;
-    --green: #2b7a78;
-    --red: #e63946;
-    --muted: #6b6b7b;
-    --border: #e0ddd6;
-  }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:#0e1117;color:#f0f0f5;min-height:100vh;}
-
   /* LOGIN */
-  .login-wrap {
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    background:#0e1117;
-    background-image: radial-gradient(ellipse at 60% 40%, rgba(244,162,97,.12) 0%, transparent 55%);
-  }
-  .login-card {
-    background:#16181f; border:1px solid #2a2d38; border-radius:24px; 
-    padding:2.5rem; width:380px;
-  }
-  .login-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; margin-bottom:.2rem; }
-  .login-logo span { color:#f4a261; }
-  .login-sub { font-size:.82rem; color:#555; margin-bottom:2rem; }
-  .login-card label { display:block; font-size:.82rem; font-weight:600; color:#888; margin-bottom:.4rem; }
-  .login-card input {
-    width:100%; padding:.8rem 1rem; border-radius:10px; background:#0e1117;
-    border:1.5px solid #2a2d38; color:#f0f0f5; font-size:.9rem; outline:none;
-    margin-bottom:1rem; transition:border-color .2s;
-  }
-  .login-card input:focus { border-color:#f4a261; }
-  .login-btn {
-    width:100%; padding:.9rem; background:#f4a261; color:#0e1117;
-    border:none; border-radius:10px; font-weight:700; font-size:.95rem;
-    cursor:pointer; transition:background .2s;
-  }
-  .login-btn:hover { background:#e8934f; }
-  .login-err { color:#e63946; font-size:.8rem; margin-top:.5rem; display:none; }
-
-  /* APP LAYOUT */
-  .app { display:none; grid-template-columns:220px 1fr; min-height:100vh; }
-  .app.show { display:grid; }
-
-  /* SIDEBAR */
-  .sidebar {
-    background:#16181f; border-right:1px solid #2a2d38;
-    display:flex; flex-direction:column; padding:1.5rem 0;
-  }
-  .sb-logo {
-    font-family:'Syne',sans-serif; font-weight:800; font-size:1.15rem;
-    padding:0 1.5rem 1.75rem; border-bottom:1px solid #2a2d38;
-  }
-  .sb-logo span { color:#f4a261; }
-  .sb-nav { padding:.75rem 0; flex:1; }
-  .nav-item {
-    display:flex; align-items:center; gap:.75rem;
-    padding:.7rem 1.5rem; font-size:.88rem; font-weight:500;
-    color:#888; cursor:pointer; transition:all .2s;
-    border-left:3px solid transparent;
-  }
-  .nav-item:hover { color:#f0f0f5; background:#1e2028; }
-  .nav-item.active { color:#f4a261; background:#1e2028; border-left-color:#f4a261; }
-  .sb-footer { padding:1rem 1.5rem; border-top:1px solid #2a2d38; }
-  .logout-btn {
-    width:100%; padding:.6rem; background:#1e2028; border:1px solid #2a2d38;
-    border-radius:8px; color:#888; font-size:.82rem; cursor:pointer;
-  }
-  .logout-btn:hover { background:#e63946; color:#fff; border-color:#e63946; }
-
-  /* MAIN CONTENT */
-  .main { overflow-y:auto; padding:2rem 2.5rem; }
-  .page { display:none; }
-  .page.active { display:block; }
-  .page-title {
-    font-family:'Syne',sans-serif; font-size:1.75rem; font-weight:800;
-    letter-spacing:-1px;
-  }
-  .page-sub { font-size:.88rem; color:#666; margin-top:.25rem; }
-
-  /* DASHBOARD CARDS */
-  .dash-grid {
-    display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem;
-  }
-  .dash-card {
-    background:#16181f; border:1px solid #2a2d38; border-radius:16px;
-    padding:1.5rem;
-  }
-  .dash-card-label {
-    font-size:.72rem; text-transform:uppercase; letter-spacing:.1em;
-    color:#555; margin-bottom:.5rem;
-  }
-  .dash-card-val {
-    font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800;
-    line-height:1; letter-spacing:-2px;
-  }
-
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0e1117 radial-gradient(ellipse at 60% 40%,rgba(244,162,97,.12) 0%,transparent 55%);}
+  .login-card{background:#16181f;border:1px solid #2a2d38;border-radius:24px;padding:2.5rem;width:400px;}
+  .login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:.2rem;}
+  .login-logo span{color:#f4a261;}
+  .login-sub{font-size:.82rem;color:#555;margin-bottom:1.25rem;}
+  .login-hint{font-size:.75rem;color:#555;background:#1e2028;border:1px solid #2a2d38;
+    border-radius:10px;padding:.75rem;margin-bottom:1.5rem;line-height:1.7;}
+  .login-hint strong{color:#aaa;}
+  .login-card label{display:block;font-size:.82rem;font-weight:600;color:#888;margin-bottom:.4rem;}
+  .login-card input{width:100%;padding:.8rem 1rem;border-radius:10px;background:#0e1117;
+    border:1.5px solid #2a2d38;color:#f0f0f5;font-family:'DM Sans',sans-serif;
+    font-size:.9rem;outline:none;margin-bottom:1rem;transition:border-color .2s;}
+  .login-card input:focus{border-color:#f4a261;}
+  .login-btn{width:100%;padding:.9rem;background:#f4a261;color:#0e1117;border:none;
+    border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;}
+  .login-btn:hover{background:#e8934f;}
+  .login-err{color:#e63946;font-size:.8rem;margin-top:.5rem;display:none;}
+  /* APP */
+  .app{display:none;grid-template-columns:220px 1fr;min-height:100vh;}
+  .app.show{display:grid;}
+  .sidebar{background:#16181f;border-right:1px solid #2a2d38;display:flex;flex-direction:column;padding:1.5rem 0;}
+  .sb-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;
+    padding:0 1.5rem 1.75rem;border-bottom:1px solid #2a2d38;}
+  .sb-logo span{color:#f4a261;}
+  .sb-nav{padding:.75rem 0;flex:1;}
+  .nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;
+    font-size:.88rem;font-weight:500;color:#888;cursor:pointer;transition:all .2s;
+    border-left:3px solid transparent;}
+  .nav-item:hover{color:#f0f0f5;background:#1e2028;}
+  .nav-item.active{color:#f4a261;background:#1e2028;border-left-color:#f4a261;}
+  .nav-item .ni{font-size:1.1rem;width:22px;text-align:center;}
+  .sb-footer{padding:1rem 1.5rem;border-top:1px solid #2a2d38;}
+  .sb-user{font-size:.82rem;color:#555;margin-bottom:.75rem;}
+  .logout-btn{width:100%;padding:.6rem;background:#1e2028;border:1px solid #2a2d38;
+    border-radius:8px;color:#888;font-size:.82rem;cursor:pointer;transition:all .2s;}
+  .logout-btn:hover{background:#e63946;color:#fff;border-color:#e63946;}
+  .main{overflow-y:auto;}
+  .page{display:none;padding:2rem 2.5rem;}
+  .page.active{display:block;}
+  .page-header{margin-bottom:2rem;}
+  .page-title{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-1px;}
+  .page-sub{font-size:.88rem;color:#666;margin-top:.25rem;}
+  /* DASHBOARD */
+  .dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+  .dash-card{background:#16181f;border:1px solid #2a2d38;border-radius:16px;padding:1.5rem;}
+  .dash-card-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#555;margin-bottom:.5rem;}
+  .dash-card-val{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;line-height:1;letter-spacing:-2px;}
+  .dash-card-sub{font-size:.78rem;color:#555;margin-top:.4rem;}
   /* TABLES */
-  .table-wrap {
-    background:#16181f; border:1px solid #2a2d38; border-radius:16px;
-    overflow:hidden;
-  }
-  table { width:100%; border-collapse:collapse; }
-  th {
-    font-size:.72rem; text-transform:uppercase; letter-spacing:.1em;
-    color:#555; padding:.75rem 1.5rem; text-align:left;
-    border-bottom:1px solid #2a2d38;
-  }
-  td { padding:.85rem 1.5rem; font-size:.88rem; border-bottom:1px solid #1a1d24; }
-  tr:hover td { background:#1e2028; }
-
-  .status-pill {
-    display:inline-flex; align-items:center; gap:.35rem;
-    padding:.3rem .8rem; border-radius:20px; font-size:.72rem; font-weight:600;
-  }
-  .p-wait { background:rgba(244,162,97,.15); color:#f4a261; }
-  .p-done { background:rgba(43,122,120,.15); color:#2b7a78; }
-  .p-red { background:rgba(230,57,70,.12); color:#e63946; }
-
-  /* BUTTONS */
-  .btn {
-    display:inline-flex; align-items:center; gap:.5rem;
-    padding:.65rem 1.25rem; border-radius:10px; border:none;
-    font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600;
-    cursor:pointer; transition:all .2s;
-  }
-  .btn-gold { background:#f4a261; color:#0e1117; }
-  .btn-green { background:rgba(43,122,120,.15); color:#2b7a78; border:1px solid rgba(43,122,120,.3); }
-  .btn-red { background:rgba(230,57,70,.1); color:#e63946; border:1px solid rgba(230,57,70,.25); }
+  .table-wrap{background:#16181f;border:1px solid #2a2d38;border-radius:16px;overflow:hidden;margin-bottom:1.5rem;}
+  .table-head{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid #2a2d38;}
+  .table-head h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#555;
+    padding:.75rem 1.5rem;text-align:left;border-bottom:1px solid #2a2d38;}
+  td{padding:.85rem 1.5rem;font-size:.88rem;border-bottom:1px solid #1a1d24;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#1e2028;}
+  .status-pill{display:inline-flex;align-items:center;padding:.3rem .8rem;border-radius:20px;
+    font-size:.72rem;font-weight:600;}
+  .p-wait{background:rgba(244,162,97,.15);color:#f4a261;}
+  .p-done{background:rgba(43,122,120,.15);color:#2b7a78;}
+  .p-red{background:rgba(230,57,70,.12);color:#e63946;}
+  .p-gray{background:#1e2028;color:#666;}
+  /* FORM */
+  .form-card{background:#16181f;border:1px solid #2a2d38;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;}
+  .form-card h3{font-size:.9rem;font-weight:700;margin-bottom:1.25rem;color:#aaa;}
+  .form-row{display:flex;gap:1rem;flex-wrap:wrap;}
+  .form-group{flex:1;min-width:160px;}
+  .form-group label{display:block;font-size:.78rem;font-weight:600;color:#666;margin-bottom:.35rem;}
+  .form-group input,.form-group select{width:100%;padding:.7rem .9rem;background:#0e1117;
+    border:1.5px solid #2a2d38;border-radius:10px;color:#f0f0f5;
+    font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:#f4a261;}
+  /* BTNS */
+  .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;
+    border-radius:10px;border:none;font-family:'DM Sans',sans-serif;
+    font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-gold{background:#f4a261;color:#0e1117;}
+  .btn-gold:hover{background:#e8934f;}
+  .btn-green{background:rgba(43,122,120,.15);color:#2b7a78;border:1px solid rgba(43,122,120,.3);}
+  .btn-green:hover{background:#2b7a78;color:#fff;}
+  .btn-red{background:rgba(230,57,70,.1);color:#e63946;border:1px solid rgba(230,57,70,.25);}
+  .btn-red:hover{background:#e63946;color:#fff;}
+  .btn-ghost{background:#1e2028;color:#888;border:1px solid #2a2d38;}
+  .btn-ghost:hover{background:#2a2d38;color:#f0f0f5;}
+  /* MÓDULOS */
+  .modulos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
+  .modulo-card{background:#16181f;border:1px solid #2a2d38;border-radius:14px;padding:1.25rem;}
+  .mod-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:.25rem;}
+  .mod-asesor{font-size:.82rem;color:#888;}
+  .mod-estado{font-size:.75rem;font-weight:600;margin-top:.5rem;}
+  .mod-available{color:#2b7a78;} .mod-busy{color:#e63946;} .mod-pause{color:#f4a261;}
+  /* SERVICIO BARS */
+  .srv-wait-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;}
+  .srv-wait-card{background:#16181f;border:1px solid #2a2d38;border-radius:12px;padding:1.1rem;}
+  .swc-name{font-size:.88rem;font-weight:600;margin-bottom:.3rem;}
+  .swc-count{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#f4a261;}
+  .swc-label{font-size:.72rem;color:#555;}
+  .section-gap{margin-bottom:2rem;}
+  @media(max-width:900px){.app{grid-template-columns:1fr;}.sidebar{display:none;}
+    .dash-grid{grid-template-columns:1fr 1fr;}.modulos-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -145,6 +123,11 @@
   <div class="login-card">
     <div class="login-logo">Turno<span>Flow</span></div>
     <div class="login-sub">Panel de Administración</div>
+    <div class="login-hint">
+      <strong>Credenciales de admin:</strong><br>
+      Email: <code>admin@turnos.com</code><br>
+      Contraseña: <code>admin123</code>
+    </div>
     <label>Correo electrónico</label>
     <input type="email" id="inp-email" placeholder="admin@turnos.com" value="admin@turnos.com">
     <label>Contraseña</label>
@@ -152,91 +135,160 @@
     <button class="login-btn" onclick="login()">Ingresar</button>
     <div class="login-err" id="login-err">Credenciales incorrectas</div>
     <p style="text-align:center;font-size:.75rem;color:#444;margin-top:1.5rem">
-      <a href="/pages/index.html" style="color:#f4a261;text-decoration:none">← Volver al inicio</a>
+      <a href="/" style="color:#f4a261;text-decoration:none">← Volver al inicio</a>
     </p>
   </div>
 </div>
 
 <!-- APP -->
 <div class="app" id="app">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-logo">Turno<span>Flow</span></div>
     <div class="sb-nav">
-      <div class="nav-item active" onclick="showPage('dashboard')"><span>📊</span> Dashboard</div>
-      <div class="nav-item" onclick="showPage('turnos')"><span>🎫</span> Turnos</div>
-      <div class="nav-item" onclick="showPage('servicios')"><span>⚙️</span> Servicios</div>
-      <div class="nav-item" onclick="showPage('usuarios')"><span>👥</span> Usuarios</div>
+      <div class="nav-item active" onclick="showPage('dashboard')"><span class="ni">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="showPage('turnos')"><span class="ni">🎫</span>Turnos</div>
+      <div class="nav-item" onclick="showPage('servicios')"><span class="ni">⚙️</span>Servicios</div>
+      <div class="nav-item" onclick="showPage('usuarios')"><span class="ni">👥</span>Usuarios</div>
     </div>
     <div class="sb-footer">
-      <div class="sb-user" id="sb-user">Administrador</div>
+      <div class="sb-user" id="sb-user">Admin</div>
       <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
   <div class="main">
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="page-title">Dashboard</div>
-      <div class="page-sub">Monitoreo en tiempo real</div>
-
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Monitoreo en tiempo real · Actualización automática cada 5s</div>
+      </div>
       <div class="dash-grid">
         <div class="dash-card">
           <div class="dash-card-label">Total hoy</div>
-          <div class="dash-card-val" id="d-total">0</div>
+          <div class="dash-card-val" id="d-total">—</div>
+          <div class="dash-card-sub">Turnos generados</div>
         </div>
         <div class="dash-card" style="border-color:rgba(43,122,120,.4)">
           <div class="dash-card-label">Atendidos</div>
-          <div class="dash-card-val" id="d-atendidos" style="color:#2b7a78">0</div>
+          <div class="dash-card-val" id="d-atendidos" style="color:#2b7a78">—</div>
+          <div class="dash-card-sub">Finalizados hoy</div>
         </div>
         <div class="dash-card" style="border-color:rgba(244,162,97,.3)">
           <div class="dash-card-label">En espera</div>
-          <div class="dash-card-val" id="d-espera" style="color:#f4a261">0</div>
+          <div class="dash-card-val" id="d-espera" style="color:#f4a261">—</div>
+          <div class="dash-card-sub">Ahora en cola</div>
         </div>
         <div class="dash-card" style="border-color:rgba(230,57,70,.3)">
           <div class="dash-card-label">Cancelados</div>
-          <div class="dash-card-val" id="d-cancelados" style="color:#e63946">0</div>
+          <div class="dash-card-val" id="d-cancelados" style="color:#e63946">—</div>
+          <div class="dash-card-sub">Cancelados + ausentes</div>
         </div>
       </div>
-
-      <div style="margin-top:2rem">
-        <h3 style="font-size:1rem;margin-bottom:1rem;color:#aaa">Módulos activos</h3>
-        <div id="modulos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
+      <div class="section-gap">
+        <h3 style="font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:#555;margin-bottom:1rem">Estado de módulos</h3>
+        <div class="modulos-grid" id="modulos-grid"><div style="color:#444;font-size:.85rem">Sin módulos activos</div></div>
+      </div>
+      <div class="section-gap">
+        <h3 style="font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:#555;margin-bottom:1rem">Cola por servicio</h3>
+        <div class="srv-wait-grid" id="srv-wait-grid"><div style="color:#444;font-size:.85rem">Cargando…</div></div>
       </div>
     </div>
 
     <!-- TURNOS -->
     <div class="page" id="page-turnos">
-      <div class="page-title">Historial de Turnos</div>
+      <div class="page-header">
+        <div class="page-title">Historial de turnos</div>
+        <div class="page-sub">Últimos 100 registros</div>
+      </div>
       <div class="table-wrap">
+        <div class="table-head">
+          <h3>Turnos</h3>
+          <button class="btn btn-ghost" onclick="loadTurnos()">↻ Actualizar</button>
+        </div>
         <table>
           <thead>
-            <tr>
-              <th>Código</th>
-              <th>Servicio</th>
-              <th>Cliente</th>
-              <th>Hora</th>
-              <th>Estado</th>
-            </tr>
+            <tr><th>Código</th><th>Servicio</th><th>Cliente</th><th>Hora</th><th>Estado</th><th>Módulo</th></tr>
           </thead>
-          <tbody id="turnos-tbody"></tbody>
+          <tbody id="turnos-tbody">
+            <tr><td colspan="6" style="text-align:center;color:#555;padding:2rem">Cargando…</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
     <!-- SERVICIOS -->
     <div class="page" id="page-servicios">
-      <div class="page-title">Gestión de Servicios</div>
-      <!-- Aquí puedes agregar formulario para crear servicios si tu backend lo soporta -->
-      <p style="color:#888">Gestión de servicios en desarrollo</p>
+      <div class="page-header">
+        <div class="page-title">Servicios</div>
+        <div class="page-sub">Gestiona los tipos de atención disponibles</div>
+      </div>
+      <div class="form-card">
+        <h3>➕ Nuevo servicio</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre del servicio</label>
+            <input type="text" id="ns-nombre" placeholder="Ej: Caja Principal">
+          </div>
+          <div class="form-group">
+            <label>Código (3-4 letras)</label>
+            <input type="text" id="ns-codigo" placeholder="Ej: CAJ" maxlength="4" style="text-transform:uppercase">
+          </div>
+          <div class="form-group">
+            <label>Tiempo estimado (min)</label>
+            <input type="number" id="ns-tiempo" placeholder="5" min="1" max="60" value="5">
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="crearServicio()" style="margin-top:1rem">Crear servicio</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Servicios actuales</h3></div>
+        <table>
+          <thead><tr><th>Nombre</th><th>Código</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="servicios-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- USUARIOS -->
     <div class="page" id="page-usuarios">
-      <div class="page-title">Usuarios del Sistema</div>
-      <p style="color:#888">Gestión de usuarios en desarrollo</p>
+      <div class="page-header">
+        <div class="page-title">Usuarios</div>
+        <div class="page-sub">Administra cuentas y roles del sistema</div>
+      </div>
+      <div class="form-card">
+        <h3>➕ Nuevo usuario</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" id="nu-nombre" placeholder="Nombre completo">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="nu-email" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="nu-pass" placeholder="••••••">
+          </div>
+          <div class="form-group">
+            <label>Rol</label>
+            <select id="nu-rol">
+              <option value="asesor">Asesor</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="crearUsuario()" style="margin-top:1rem">Crear usuario</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Usuarios registrados</h3></div>
+        <table>
+          <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+          <tbody id="usuarios-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -244,70 +296,198 @@
 
 <script>
 const API = window.location.origin;
-const socket = io();
+let socket;
+try { socket = io(); } catch(e) { socket = null; }
+let adminUser = null;
 
-let currentPage = 'dashboard';
-
-// LOGIN
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
 async function login() {
-  const email = document.getElementById('inp-email').value;
+  const email    = document.getElementById('inp-email').value;
   const password = document.getElementById('inp-pass').value;
-
   try {
-    const r = await fetch(`${API}/api/admin/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+    const r = await fetch(`${API}/api/admin/login`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email,password})
     });
     const data = await r.json();
-    if (!data.ok) throw new Error(data.error || 'Credenciales incorrectas');
-
-    document.getElementById('sb-user').textContent = data.usuario?.nombre || 'Administrador';
-    document.getElementById('login-wrap').style.display = 'none';
+    if (!data.ok && !data.success) throw new Error(data.error||data.message||'Credenciales incorrectas');
+    adminUser = data.usuario;
+    document.getElementById('sb-user').textContent = adminUser?.nombre||'Admin';
+    document.getElementById('login-wrap').style.display='none';
     document.getElementById('app').classList.add('show');
     loadDashboard();
+    setInterval(()=>{
+      if (document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
+    },5000);
   } catch(e) {
-    document.getElementById('login-err').style.display = 'block';
-    document.getElementById('login-err').textContent = e.message;
+    const el=document.getElementById('login-err');
+    el.style.display='block'; el.textContent=e.message||'Error al ingresar';
   }
 }
-
 function logout() {
   if (!confirm('¿Cerrar sesión?')) return;
   document.getElementById('app').classList.remove('show');
-  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('login-wrap').style.display='flex';
+  adminUser=null;
 }
 
-// NAVEGACIÓN
+// ── NAV ───────────────────────────────────────────────────────────────────────
 function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  currentPage = page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector(`[onclick="showPage('${page}')"]`).classList.add('active');
+  if (page==='turnos') loadTurnos();
+  if (page==='servicios') loadServicios();
+  if (page==='usuarios') loadUsuarios();
 }
 
-// DASHBOARD
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
     const r = await fetch(`${API}/api/estado`);
-    const data = await r.json();
+    const d = await r.json();
+    document.getElementById('d-total').textContent     = d.totalHoy ?? (d.dashboard?.completedCount??0)+(d.esperando??0);
+    document.getElementById('d-atendidos').textContent = d.atendidos ?? d.dashboard?.completedCount ?? 0;
+    document.getElementById('d-espera').textContent    = d.esperando ?? d.enEspera?.length ?? 0;
+    document.getElementById('d-cancelados').textContent= (d.cancelados??0)+(d.ausentes??0)||(d.dashboard?.cancelledCount??0)+(d.dashboard?.absentCount??0);
 
-    document.getElementById('d-total').textContent = data.totalHoy || 0;
-    document.getElementById('d-atendidos').textContent = data.atendidos || 0;
-    document.getElementById('d-espera').textContent = data.esperando || 0;
-    document.getElementById('d-cancelados').textContent = (data.cancelados || 0) + (data.ausentes || 0);
-  } catch(e) {}
+    // Módulos
+    const mg = document.getElementById('modulos-grid');
+    const mods = d.modulos || [];
+    if (!mods.length) {
+      mg.innerHTML='<div style="color:#444;font-size:.85rem;grid-column:1/-1">Sin módulos activos aún</div>';
+    } else {
+      mg.innerHTML = mods.map(m=>{
+        const cls = m.estado==='disponible'?'mod-available':m.estado==='ocupado'?'mod-busy':'mod-pause';
+        const lbl = m.estado==='disponible'?'● Disponible':m.estado==='ocupado'?'● En atención':'⏸ En pausa';
+        return `<div class="modulo-card">
+          <div class="mod-num">Módulo ${m.modulo}</div>
+          <div class="mod-asesor">${m.asesorNombre||'—'}</div>
+          <div class="mod-estado ${cls}">${lbl}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // Por servicio
+    const sg = document.getElementById('srv-wait-grid');
+    const svcs = d.porServicio||d.services||[];
+    sg.innerHTML = svcs.map(s=>`
+      <div class="srv-wait-card">
+        <div class="swc-name">${s.nombre||s.name}</div>
+        <div class="swc-count">${s.esperando??s.enEspera??0}</div>
+        <div class="swc-label">en espera</div>
+        <div style="font-size:.75rem;color:#555;margin-top:.2rem">${s.total??0} hoy</div>
+      </div>`).join('');
+  } catch(e){}
 }
 
-// Carga inicial de dashboard cada 8 segundos
-setInterval(() => {
-  if (document.getElementById('app').classList.contains('show') && currentPage === 'dashboard') {
-    loadDashboard();
-  }
-}, 8000);
+// ── TURNOS ────────────────────────────────────────────────────────────────────
+async function loadTurnos() {
+  try {
+    const r = await fetch(`${API}/api/admin/turnos`);
+    const data = await r.json();
+    const stMap = {
+      Pendiente:['p-wait','En espera'],'En atencion':['p-wait','Llamado'],
+      Finalizado:['p-done','Atendido'],Cancelado:['p-gray','Cancelado'],Ausente:['p-red','Ausente'],
+      esperando:['p-wait','En espera'],llamado:['p-wait','Llamado'],
+      atendido:['p-done','Atendido'],cancelado:['p-gray','Cancelado'],ausente:['p-red','Ausente'],
+    };
+    const tbody = document.getElementById('turnos-tbody');
+    if (!data.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#555;padding:2rem">Sin registros</td></tr>';return;}
+    tbody.innerHTML = data.map(t=>{
+      const [cls,label]=stMap[t.status||t.estado]||['p-gray',t.status||t.estado];
+      const hora = new Date(t.queueEnteredAt||t.horaCreacion||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      return `<tr>
+        <td style="font-family:'Syne',sans-serif;font-weight:700">${t.id||t.codigo}</td>
+        <td>${t.serviceName||t.servicioNombre||'—'}</td>
+        <td>${t.nombre||t.name||'Cliente'}</td>
+        <td style="color:#666">${hora}</td>
+        <td><span class="status-pill ${cls}">${label}</span></td>
+        <td style="color:#666">${t.moduleNumber||t.modulo?'Módulo '+(t.moduleNumber||t.modulo):'—'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e){}
+}
 
-window.onload = () => {
-  // Nada adicional
-};
+// ── SERVICIOS ─────────────────────────────────────────────────────────────────
+async function loadServicios() {
+  const r = await fetch(`${API}/api/admin/servicios`);
+  const data = await r.json();
+  document.getElementById('servicios-tbody').innerHTML = data.map(s=>`
+    <tr>
+      <td style="font-weight:600">${s.name||s.nombre}</td>
+      <td><code style="background:#1e2028;padding:.2rem .5rem;border-radius:6px;font-size:.8rem">${s.prefix||s.codigo||'—'}</code></td>
+      <td style="color:#888">${s.estimatedMinutes||5} min</td>
+      <td><span class="status-pill ${s.active||s.activo?'p-done':'p-gray'}">${(s.active||s.activo)?'● Activo':'○ Inactivo'}</span></td>
+      <td style="display:flex;gap:.5rem">
+        <button class="btn btn-green" style="padding:.4rem .9rem;font-size:.78rem"
+          onclick="toggleServicio('${s.id}',${!(s.active||s.activo)})">
+          ${(s.active||s.activo)?'Desactivar':'Activar'}
+        </button>
+        <button class="btn btn-red" style="padding:.4rem .9rem;font-size:.78rem"
+          onclick="eliminarServicio('${s.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+async function crearServicio() {
+  const nombre = document.getElementById('ns-nombre').value.trim();
+  const codigo = document.getElementById('ns-codigo').value.trim().toUpperCase();
+  const tiempo = parseInt(document.getElementById('ns-tiempo').value)||5;
+  if (!nombre||!codigo) return alert('Completa nombre y código');
+  await fetch(`${API}/api/servicios`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({nombre,name:nombre,codigo,prefix:codigo,estimatedMinutes:tiempo})});
+  document.getElementById('ns-nombre').value='';
+  document.getElementById('ns-codigo').value='';
+  loadServicios();
+}
+async function toggleServicio(id,activo) {
+  await fetch(`${API}/api/servicios/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({activo,active:activo})});
+  loadServicios();
+}
+async function eliminarServicio(id) {
+  if (!confirm('¿Eliminar este servicio?')) return;
+  await fetch(`${API}/api/servicios/${id}`,{method:'DELETE'});
+  loadServicios();
+}
+
+// ── USUARIOS ──────────────────────────────────────────────────────────────────
+async function loadUsuarios() {
+  const r = await fetch(`${API}/api/admin/usuarios`);
+  const data = await r.json();
+  document.getElementById('usuarios-tbody').innerHTML = data.map(u=>`
+    <tr>
+      <td style="font-weight:600">${u.nombre}</td>
+      <td style="color:#888">${u.email}</td>
+      <td><span class="status-pill ${u.rol==='admin'?'p-red':'p-done'}">${u.rol}</span></td>
+      <td><button class="btn btn-red" style="padding:.4rem .9rem;font-size:.78rem"
+        onclick="eliminarUsuario('${u.id}')">Eliminar</button></td>
+    </tr>`).join('');
+}
+async function crearUsuario() {
+  const nombre=document.getElementById('nu-nombre').value.trim();
+  const email=document.getElementById('nu-email').value.trim();
+  const password=document.getElementById('nu-pass').value;
+  const rol=document.getElementById('nu-rol').value;
+  if (!nombre||!email||!password) return alert('Completa todos los campos');
+  await fetch(`${API}/api/admin/usuarios`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({nombre,email,password,rol})});
+  document.getElementById('nu-nombre').value='';
+  document.getElementById('nu-email').value='';
+  document.getElementById('nu-pass').value='';
+  loadUsuarios();
+}
+async function eliminarUsuario(id) {
+  if (!confirm('¿Eliminar este usuario?')) return;
+  await fetch(`${API}/api/admin/usuarios/${id}`,{method:'DELETE'});
+  loadUsuarios();
+}
+
+// Socket
+if (socket) socket.on('estado',()=>{
+  if (adminUser&&document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
+});
 </script>
 </body>
 </html>
