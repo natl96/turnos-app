@@ -7,130 +7,104 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="/socket.io/socket.io.js"></script>
 <style>
-  :root {
-    --ink: #0a0a0f;
-    --paper: #f5f3ee;
-    --accent: #2b7a78;
-    --red: #e63946;
-    --gold: #f4a261;
-    --muted: #6b6b7b;
-    --border: #e0ddd6;
-    --card: #fff;
-  }
+  :root{--ink:#0a0a0f;--accent:#2b7a78;--red:#e63946;--gold:#f4a261;--muted:#6b6b7b;--border:#e0ddd6;}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:#0e1117;color:#f0f0f5;min-height:100vh;display:flex;flex-direction:column;}
-
   /* LOGIN */
-  .login-wrapper {
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    background:#0e1117;
-    background-image: radial-gradient(ellipse at 30% 50%, rgba(43,122,120,.15) 0%, transparent 60%);
-  }
-  .login-card {
-    background:#16181f; border:1px solid #2a2d38;
-    border-radius:24px; padding:2.5rem; width:380px;
-    box-shadow:0 30px 80px rgba(0,0,0,.4);
-  }
-  .login-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; margin-bottom:.25rem; }
-  .login-logo span { color:#2b7a78; }
-  .login-sub { font-size:.85rem; color:#666; margin-bottom:2rem; }
-  .login-form label { display:block; font-size:.82rem; font-weight:600; color:#aaa; margin-bottom:.4rem; }
-  .login-form input {
-    width:100%; padding:.8rem 1rem; border-radius:12px;
-    background:#0e1117; border:1.5px solid #2a2d38; color:#f0f0f5;
-    font-family:'DM Sans',sans-serif; font-size:.95rem; outline:none;
-    margin-bottom:1rem; transition:border-color .2s;
-  }
-  .login-form input:focus { border-color:#2b7a78; }
-  .login-btn {
-    width:100%; padding:.9rem; background:#2b7a78; color:#fff;
-    border:none; border-radius:12px; font-weight:600; font-size:.95rem;
-    cursor:pointer; transition:background .2s;
-  }
-  .login-btn:hover { background:#1f5e5c; }
-  .login-error { color:#e63946; font-size:.82rem; margin-top:.5rem; display:none; }
-
-  /* PANEL PRINCIPAL */
-  .panel { display:none; flex-direction:column; height:100vh; }
-  .panel.show { display:flex; }
-
-  .topbar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:.9rem 2rem; background:#16181f; border-bottom:1px solid #2a2d38;
-    flex-shrink:0;
-  }
-  .topbar-left { display:flex; align-items:center; gap:1rem; }
-  .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; }
-  .topbar-logo span { color:#2b7a78; }
-  .modulo-badge {
-    background:#2b7a78; color:#fff;
-    padding:.35rem .9rem; border-radius:20px;
-    font-size:.8rem; font-weight:600;
-  }
-  .asesor-name { font-size:.85rem; color:#888; }
-
-  .content {
-    display:grid; grid-template-columns:1fr 360px;
-    gap:0; flex:1; overflow:hidden;
-  }
-
-  .main-panel {
-    padding:2rem; overflow-y:auto;
-    border-right:1px solid #2a2d38;
-  }
-
-  .turno-actual {
-    background:linear-gradient(135deg,#1a3a39 0%,#162e2d 100%);
-    border:1px solid #2b7a78;
-    border-radius:20px; padding:2rem;
-    margin-bottom:2rem;
-    position:relative;
-  }
-  .ta-label { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:#4d9d9a; margin-bottom:.75rem; }
-  .ta-code {
-    font-family:'Syne',sans-serif; font-size:3.5rem; font-weight:800;
-    line-height:1; letter-spacing:-3px; color:#fff; margin-bottom:.25rem;
-  }
-  .ta-service { font-size:.95rem; color:#aaa; margin-bottom:1.5rem; }
-  .ta-meta { display:flex; gap:1.5rem; margin-bottom:1.75rem; }
-  .ta-meta-item { display:flex; flex-direction:column; gap:.2rem; }
-  .ta-meta-key { font-size:.72rem; color:#666; text-transform:uppercase; letter-spacing:.08em; }
-  .ta-meta-val { font-size:.9rem; font-weight:600; }
-
-  .btn-action {
-    display:inline-flex; align-items:center; gap:.5rem;
-    padding:.65rem 1.25rem; border-radius:12px; border:none;
-    font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600;
-    cursor:pointer; transition:all .2s;
-  }
-  .btn-green { background:#2b7a78; color:#fff; }
-  .btn-green:hover { background:#1f5e5c; }
-  .btn-red { background:rgba(230,57,70,.15); color:#e63946; border:1px solid rgba(230,57,70,.3); }
-  .btn-red:hover { background:#e63946; color:#fff; }
-  .btn-gold { background:rgba(244,162,97,.15); color:#f4a261; border:1px solid rgba(244,162,97,.3); }
-  .btn-gold:hover { background:#f4a261; color:#fff; }
-
-  .cola-panel {
-    display:flex; flex-direction:column; overflow:hidden;
-  }
-  .cola-header {
-    padding:1.25rem 1.5rem; border-bottom:1px solid #2a2d38;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .cola-list { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:.6rem; }
-  .cola-item {
-    background:#16181f; border:1px solid #2a2d38; border-radius:12px;
-    padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem;
-  }
-  .cola-num {
-    font-family:'Syne',sans-serif; font-weight:800; font-size:.85rem;
-    color:#2b7a78; min-width:60px;
-  }
-
-  @media(max-width:900px){
-    .content{grid-template-columns:1fr;}
-    .cola-panel{display:none;}
-  }
+  .login-wrapper{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0e1117 radial-gradient(ellipse at 30% 50%,rgba(43,122,120,.15) 0%,transparent 60%);}
+  .login-card{background:#16181f;border:1px solid #2a2d38;border-radius:24px;padding:2.5rem;width:380px;
+    box-shadow:0 30px 80px rgba(0,0,0,.4);}
+  .login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:.25rem;}
+  .login-logo span{color:#2b7a78;}
+  .login-sub{font-size:.85rem;color:#666;margin-bottom:2rem;}
+  .login-hint{font-size:.75rem;color:#444;margin:1rem 0;padding:.75rem;background:#1e2028;
+    border-radius:10px;border:1px solid #2a2d38;line-height:1.7;}
+  .login-form label{display:block;font-size:.82rem;font-weight:600;color:#aaa;margin-bottom:.4rem;}
+  .login-form input{width:100%;padding:.8rem 1rem;border-radius:12px;background:#0e1117;
+    border:1.5px solid #2a2d38;color:#f0f0f5;font-family:'DM Sans',sans-serif;
+    font-size:.95rem;outline:none;margin-bottom:1rem;transition:border-color .2s;}
+  .login-form input:focus{border-color:#2b7a78;}
+  .login-btn{width:100%;padding:.9rem;background:#2b7a78;color:#fff;border:none;
+    border-radius:12px;font-weight:600;font-size:.95rem;cursor:pointer;transition:background .2s;}
+  .login-btn:hover{background:#1f5e5c;}
+  .login-error{color:#e63946;font-size:.82rem;margin-top:.5rem;display:none;}
+  /* PANEL */
+  .panel{display:none;flex-direction:column;height:100vh;}
+  .panel.show{display:flex;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;
+    background:#16181f;border-bottom:1px solid #2a2d38;flex-shrink:0;}
+  .topbar-left{display:flex;align-items:center;gap:1rem;}
+  .topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;}
+  .topbar-logo span{color:#2b7a78;}
+  .modulo-badge{background:#2b7a78;color:#fff;padding:.35rem .9rem;border-radius:20px;font-size:.8rem;font-weight:600;}
+  .asesor-name{font-size:.85rem;color:#888;}
+  .topbar-right{display:flex;align-items:center;gap:.75rem;}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:#2b7a78;}
+  .status-dot.pausa{background:#f4a261;}
+  .status-dot.ocupado{background:#e63946;}
+  .content{display:grid;grid-template-columns:1fr 360px;flex:1;overflow:hidden;}
+  .main-panel{padding:2rem;overflow-y:auto;border-right:1px solid #2a2d38;display:flex;flex-direction:column;gap:1.5rem;}
+  .turno-actual{background:linear-gradient(135deg,#1a3a39 0%,#162e2d 100%);border:1px solid #2b7a78;
+    border-radius:20px;padding:2rem;position:relative;overflow:hidden;}
+  .turno-actual::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;
+    border-radius:50%;background:rgba(43,122,120,.1);}
+  .ta-label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#4d9d9a;margin-bottom:.75rem;}
+  .ta-code{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;
+    letter-spacing:-3px;color:#fff;margin-bottom:.25rem;}
+  .ta-service{font-size:.95rem;color:#aaa;margin-bottom:1.5rem;}
+  .ta-meta{display:flex;gap:1.5rem;margin-bottom:1.75rem;}
+  .ta-meta-item{display:flex;flex-direction:column;gap:.2rem;}
+  .ta-meta-key{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.08em;}
+  .ta-meta-val{font-size:.9rem;font-weight:600;}
+  .ta-actions{display:flex;gap:.75rem;flex-wrap:wrap;}
+  .btn-action{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;
+    border-radius:12px;border:none;font-family:'DM Sans',sans-serif;
+    font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-green{background:#2b7a78;color:#fff;}
+  .btn-green:hover{background:#1f5e5c;}
+  .btn-red{background:rgba(230,57,70,.15);color:#e63946;border:1px solid rgba(230,57,70,.3);}
+  .btn-red:hover{background:#e63946;color:#fff;}
+  .btn-gold{background:rgba(244,162,97,.15);color:#f4a261;border:1px solid rgba(244,162,97,.3);}
+  .btn-gold:hover{background:#f4a261;color:#fff;}
+  .btn-gray{background:#1e2028;color:#aaa;border:1px solid #2a2d38;}
+  .btn-gray:hover{background:#2a2d38;color:#fff;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:3rem;text-align:center;color:#555;flex:1;}
+  .empty-state p{font-size:.9rem;}
+  .notas-section{background:#16181f;border:1px solid #2a2d38;border-radius:16px;padding:1.5rem;}
+  .notas-section label{display:block;font-size:.82rem;font-weight:600;color:#888;margin-bottom:.5rem;}
+  .notas-section textarea{width:100%;background:#0e1117;border:1.5px solid #2a2d38;border-radius:10px;
+    color:#f0f0f5;font-family:'DM Sans',sans-serif;font-size:.9rem;padding:.75rem;
+    resize:vertical;min-height:80px;outline:none;transition:border-color .2s;}
+  .notas-section textarea:focus{border-color:#2b7a78;}
+  .pausa-banner{background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);
+    border-radius:16px;padding:1.5rem;text-align:center;display:none;}
+  .pausa-banner.show{display:block;}
+  .pausa-banner p{color:#f4a261;font-weight:600;margin-bottom:.75rem;}
+  .cola-panel{display:flex;flex-direction:column;overflow:hidden;}
+  .cola-header{padding:1.25rem 1.5rem;border-bottom:1px solid #2a2d38;
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .cola-header h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;}
+  .cola-count{background:#2a2d38;color:#888;padding:.25rem .7rem;border-radius:20px;
+    font-size:.78rem;font-weight:600;}
+  .cola-list{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.6rem;}
+  .cola-item{background:#16181f;border:1px solid #2a2d38;border-radius:12px;
+    padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;}
+  .cola-num{font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;color:#2b7a78;min-width:70px;}
+  .cola-info{flex:1;}
+  .cola-name{font-size:.88rem;font-weight:500;}
+  .cola-meta{font-size:.75rem;color:#555;margin-top:.15rem;}
+  .hist-panel{padding:1rem 1.5rem;border-top:1px solid #2a2d38;}
+  .hist-panel h3{font-size:.82rem;font-weight:600;color:#666;margin-bottom:.75rem;}
+  .hist-item{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;
+    border-bottom:1px solid #1a1d24;font-size:.82rem;}
+  .hist-code{font-weight:700;min-width:70px;}
+  .hist-srv{color:#888;flex:1;}
+  .hist-status{font-size:.72rem;padding:.2rem .6rem;border-radius:10px;}
+  .st-done{background:rgba(43,122,120,.15);color:#2b7a78;}
+  .st-absent{background:rgba(230,57,70,.12);color:#e63946;}
+  @media(max-width:900px){.content{grid-template-columns:1fr;}.cola-panel{display:none;}}
 </style>
 </head>
 <body>
@@ -140,6 +114,12 @@
   <div class="login-card">
     <div class="login-logo">Turno<span>Flow</span></div>
     <div class="login-sub">Panel de Asesor</div>
+    <div class="login-hint">
+      <strong>Credenciales de acceso:</strong><br>
+      Módulo 1 · Contraseña: <code>1234</code><br>
+      Módulo 2 · Contraseña: <code>1234</code><br>
+      Módulo 3 · Contraseña: <code>1234</code>
+    </div>
     <div class="login-form">
       <label>Número de módulo</label>
       <input type="text" id="inp-modulo" placeholder="Ej: 1, 2, 3..." maxlength="3">
@@ -149,12 +129,12 @@
       <div class="login-error" id="login-error">Módulo o contraseña incorrectos</div>
     </div>
     <p style="text-align:center;font-size:.75rem;color:#444;margin-top:1.5rem">
-      <a href="/pages/index.html" style="color:#2b7a78;text-decoration:none">← Volver al inicio</a>
+      <a href="/" style="color:#2b7a78;text-decoration:none">← Volver al inicio</a>
     </p>
   </div>
 </div>
 
-<!-- PANEL -->
+<!-- PANEL PRINCIPAL -->
 <div class="panel" id="panel">
   <div class="topbar">
     <div class="topbar-left">
@@ -163,6 +143,8 @@
       <div class="asesor-name" id="show-asesor">Asesor</div>
     </div>
     <div class="topbar-right">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text" style="font-size:.82rem;color:#888">Disponible</span>
       <button class="btn-action btn-gold" id="btn-pausa" onclick="togglePausa()">⏸ Pausa</button>
       <button class="btn-action btn-gray" onclick="logout()">Salir</button>
     </div>
@@ -171,173 +153,287 @@
   <div class="content">
     <!-- IZQUIERDO -->
     <div class="main-panel">
-      <div id="turno-container">
-        <div class="empty-state" id="empty-state">
-          <p>No hay turno activo.<br>Presiona <strong>Llamar siguiente</strong> para comenzar.</p>
+      <div class="pausa-banner" id="pausa-banner">
+        <p>⏸ Módulo en pausa – No se están asignando turnos</p>
+        <button class="btn-action btn-green" onclick="togglePausa()">Reanudar atención</button>
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/>
+        </svg>
+        <p style="margin-top:1rem">No hay turno activo.<br>Presiona <strong>Llamar siguiente</strong> para comenzar.</p>
+      </div>
+
+      <div class="turno-actual" id="turno-actual" style="display:none">
+        <div class="ta-label">Turno en atención</div>
+        <div class="ta-code" id="ta-code">—</div>
+        <div class="ta-service" id="ta-service">—</div>
+        <div class="ta-meta">
+          <div class="ta-meta-item">
+            <span class="ta-meta-key">Cliente</span>
+            <span class="ta-meta-val" id="ta-nombre">—</span>
+          </div>
+          <div class="ta-meta-item">
+            <span class="ta-meta-key">Hora llamado</span>
+            <span class="ta-meta-val" id="ta-hora">—</span>
+          </div>
+          <div class="ta-meta-item">
+            <span class="ta-meta-key">Tiempo</span>
+            <span class="ta-meta-val" id="ta-tiempo">0:00</span>
+          </div>
         </div>
-        <div class="turno-actual" id="turno-actual" style="display:none">
-          <div class="ta-label">Turno en atención</div>
-          <div class="ta-code" id="ta-code">—</div>
-          <div class="ta-service" id="ta-service">—</div>
-          <div class="ta-meta">
-            <div class="ta-meta-item">
-              <span class="ta-meta-key">Cliente</span>
-              <span class="ta-meta-val" id="ta-nombre">—</span>
-            </div>
-            <div class="ta-meta-item">
-              <span class="ta-meta-key">Hora llamado</span>
-              <span class="ta-meta-val" id="ta-hora">—</span>
-            </div>
-          </div>
-          <div style="display:flex;gap:1rem">
-            <button class="btn-action btn-green" onclick="finalizarAtencion()">✓ Finalizar</button>
-            <button class="btn-action btn-gold" onclick="rellamarTurno()">📢 Rellamar</button>
-            <button class="btn-action btn-red" onclick="marcarAusente()">✗ Ausente</button>
-          </div>
+        <div class="ta-actions">
+          <button class="btn-action btn-green" onclick="finalizarAtencion()">✓ Finalizar</button>
+          <button class="btn-action btn-gold" onclick="rellamarTurno()">📢 Rellamar</button>
+          <button class="btn-action btn-red" onclick="marcarAusente()">✗ Ausente</button>
         </div>
       </div>
 
-      <button class="btn-action btn-green" id="btn-llamar" onclick="llamarSiguiente()" style="width:100%;margin-top:2rem;padding:1rem;font-size:1.1rem">
+      <div class="notas-section">
+        <label>📝 Notas de atención</label>
+        <textarea id="inp-notas" placeholder="Observaciones sobre el caso atendido…"></textarea>
+      </div>
+
+      <button class="btn-action btn-green" onclick="llamarSiguiente()"
+        style="width:100%;justify-content:center;padding:1rem;font-size:1rem;border-radius:16px;margin-top:auto">
         ▶ Llamar siguiente turno
       </button>
     </div>
 
-    <!-- DERECHO – COLA -->
+    <!-- DERECHO: COLA -->
     <div class="cola-panel">
       <div class="cola-header">
         <h2>Cola de espera</h2>
         <span class="cola-count" id="cola-count">0</span>
       </div>
-      <div class="cola-list" id="cola-list"></div>
+      <div class="cola-list" id="cola-list">
+        <div style="text-align:center;color:#555;padding:2rem;font-size:.85rem">Sin turnos en espera</div>
+      </div>
+      <div class="hist-panel">
+        <h3>Últimas atenciones</h3>
+        <div id="hist-list"><div style="color:#444;font-size:.82rem">Sin historial aún</div></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 const API = window.location.origin;
-const socket = io();
+let socket;
+// Socket.IO opcional
+try { socket = io(); socket.on('estado', data => { if (moduloNum) renderCola(data.cola||data.enEspera||[]); }); }
+catch(e) { socket = null; }
 
 let moduloNum = null;
 let turnoActual = null;
+let enPausa = false;
+let tiempoTimer = null;
+let tiempoInicio = null;
+let historial = [];
 
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
 async function login() {
-  const modulo = document.getElementById('inp-modulo').value.trim();
+  const modulo   = document.getElementById('inp-modulo').value.trim();
   const password = document.getElementById('inp-pass').value;
-
+  if (!modulo) { showErr('Ingresa el número de módulo'); return; }
   try {
-    const r = await fetch(`${API}/api/asesor/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ modulo, password })
+    const r = await fetch(`${API}/api/asesor/login`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ modulo, password, moduleNumber: modulo })
     });
     const data = await r.json();
-    if (!data.ok) throw new Error(data.error);
-
+    if (!data.ok && !data.success) throw new Error(data.error||data.message||'Error al ingresar');
     moduloNum = modulo;
     document.getElementById('show-modulo').textContent = modulo;
-    document.getElementById('show-asesor').textContent = data.asesor?.nombre || 'Asesor';
+    document.getElementById('show-asesor').textContent = data.asesor?.nombre || data.advisor?.moduleNumber ? `Asesor ${modulo}` : `Asesor ${modulo}`;
     document.getElementById('login-wrapper').style.display = 'none';
     document.getElementById('panel').classList.add('show');
     loadCola();
   } catch(e) {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-error').textContent = e.message || 'Error al ingresar';
+    showErr(e.message||'Error al ingresar');
   }
 }
-
+function showErr(msg) {
+  const el = document.getElementById('login-error');
+  el.style.display='block'; el.textContent=msg;
+}
 function logout() {
   if (!confirm('¿Cerrar sesión?')) return;
   document.getElementById('panel').classList.remove('show');
-  document.getElementById('login-wrapper').style.display = 'flex';
-  turnoActual = null;
+  document.getElementById('login-wrapper').style.display='flex';
+  turnoActual=null; moduloNum=null; stopTimer();
 }
 
+// ── COLA ──────────────────────────────────────────────────────────────────────
 async function loadCola() {
   try {
     const r = await fetch(`${API}/api/asesor/cola`);
     const lista = await r.json();
     renderCola(lista);
-  } catch(e) {}
+  } catch(e){}
 }
-
 function renderCola(lista) {
   const el = document.getElementById('cola-list');
   document.getElementById('cola-count').textContent = lista.length;
   if (!lista.length) {
-    el.innerHTML = '<div style="text-align:center;color:#555;padding:2rem">Sin turnos en espera</div>';
+    el.innerHTML='<div style="text-align:center;color:#555;padding:2rem;font-size:.85rem">Sin turnos en espera</div>';
     return;
   }
-  el.innerHTML = lista.map(t => `
+  el.innerHTML = lista.map(t=>`
     <div class="cola-item">
-      <div class="cola-num">${t.id}</div>
-      <div>${t.serviceName || 'Servicio'}</div>
-    </div>
-  `).join('');
+      <div class="cola-num">${t.id||t.codigo}</div>
+      <div class="cola-info">
+        <div class="cola-name">${t.nombre||t.name||'Cliente'}</div>
+        <div class="cola-meta">${t.serviceName||t.servicioNombre||'—'}</div>
+      </div>
+      <div style="font-size:.75rem;color:#555">${tiempoRel(t.queueEnteredAt||t.horaCreacion)}</div>
+    </div>`).join('');
+}
+function tiempoRel(iso) {
+  if (!iso) return '';
+  const d = Math.floor((Date.now()-new Date(iso))/60000);
+  if (d<1) return 'Ahora'; if (d===1) return 'Hace 1 min'; return `Hace ${d} min`;
 }
 
+// ── LLAMAR ────────────────────────────────────────────────────────────────────
 async function llamarSiguiente() {
-  if (turnoActual) return alert('Ya tienes un turno activo');
+  if (enPausa) { alert('Estás en pausa. Reanuda para llamar turnos.'); return; }
+  if (turnoActual) { alert('Hay un turno activo. Finalízalo primero.'); return; }
   try {
-    const r = await fetch(`${API}/api/asesor/llamar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const r = await fetch(`${API}/api/asesor/llamar`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ modulo: moduloNum })
     });
     const data = await r.json();
-    if (!data.ok) throw new Error(data.error);
+    if (!data.ok && !data.success) throw new Error(data.error||data.message||'No hay turnos en espera');
     turnoActual = data.turno;
-    document.getElementById('ta-code').textContent = turnoActual.id;
-    document.getElementById('ta-service').textContent = turnoActual.serviceName;
-    document.getElementById('turno-actual').style.display = 'block';
-    document.getElementById('empty-state').style.display = 'none';
+    showTurnoActual(data.turno);
+    startTimer(); playBeep(); loadCola();
   } catch(e) {
-    alert(e.message || 'No hay turnos en espera');
+    const estado = document.getElementById('empty-state');
+    if (e.message.includes('espera')||e.message.includes('empty')) {
+      estado.innerHTML=`<svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p style="color:#2b7a78;font-weight:600;margin-top:1rem">¡La cola está vacía!</p>`;
+    } else { alert(e.message); }
   }
+}
+
+function showTurnoActual(t) {
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('turno-actual').style.display='block';
+  document.getElementById('ta-code').textContent = t.id||t.codigo;
+  document.getElementById('ta-service').textContent = t.serviceName||t.servicioNombre||'—';
+  document.getElementById('ta-nombre').textContent = t.nombre||t.name||'Cliente';
+  document.getElementById('ta-hora').textContent = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('inp-notas').value = '';
 }
 
 async function finalizarAtencion() {
   if (!turnoActual) return;
-  await fetch(`${API}/api/asesor/finalizar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ turnoId: turnoActual.id, modulo: moduloNum })
-  });
-  turnoActual = null;
-  document.getElementById('turno-actual').style.display = 'none';
-  document.getElementById('empty-state').style.display = 'flex';
-  loadCola();
+  const notas = document.getElementById('inp-notas').value;
+  try {
+    await fetch(`${API}/api/asesor/finalizar`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({turnoId:turnoActual.id||turnoActual.codigo, modulo:moduloNum, notes:notas, notas})
+    });
+    historial.unshift({codigo:turnoActual.id||turnoActual.codigo, servicio:turnoActual.serviceName||turnoActual.servicioNombre, estado:'atendido'});
+    if (historial.length>5) historial.pop();
+    renderHistorial(); clearTurnoActual(); loadCola();
+  } catch(e){ alert('Error al finalizar'); }
 }
 
 async function rellamarTurno() {
   if (!turnoActual) return;
-  await fetch(`${API}/api/asesor/rellamar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ turnoId: turnoActual.id, modulo: moduloNum })
+  await fetch(`${API}/api/asesor/rellamar`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({turnoId:turnoActual.id, modulo:moduloNum})
   });
+  playBeep();
 }
 
 async function marcarAusente() {
   if (!turnoActual) return;
-  await fetch(`${API}/api/asesor/ausente`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ turnoId: turnoActual.id, modulo: moduloNum })
-  });
-  turnoActual = null;
-  document.getElementById('turno-actual').style.display = 'none';
-  document.getElementById('empty-state').style.display = 'flex';
-  loadCola();
+  if (!confirm(`¿Marcar ${turnoActual.id||turnoActual.codigo} como no presentado?`)) return;
+  try {
+    await fetch(`${API}/api/asesor/ausente`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({turnoId:turnoActual.id, modulo:moduloNum})
+    });
+    historial.unshift({codigo:turnoActual.id||turnoActual.codigo, servicio:turnoActual.serviceName||turnoActual.servicioNombre, estado:'ausente'});
+    if (historial.length>5) historial.pop();
+    renderHistorial(); clearTurnoActual(); loadCola();
+  } catch(e){ alert('Error al marcar ausente'); }
 }
 
+function clearTurnoActual() {
+  turnoActual=null; stopTimer();
+  document.getElementById('turno-actual').style.display='none';
+  const e=document.getElementById('empty-state');
+  e.style.display='flex';
+  e.innerHTML=`<svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/>
+  </svg><p style="margin-top:1rem">No hay turno activo.<br>Presiona <strong>Llamar siguiente</strong>.</p>`;
+}
+
+// ── PAUSA ─────────────────────────────────────────────────────────────────────
 async function togglePausa() {
-  // Si tu backend tiene esta ruta, la puedes implementar más adelante
-  alert('Función de pausa en desarrollo');
+  enPausa = !enPausa;
+  await fetch(`${API}/api/asesor/pausa`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({modulo:moduloNum, activa:enPausa})
+  });
+  document.getElementById('pausa-banner').classList.toggle('show',enPausa);
+  document.getElementById('btn-pausa').textContent = enPausa ? '▶ Reanudar' : '⏸ Pausa';
+  document.getElementById('btn-pausa').className = enPausa ? 'btn-action btn-green' : 'btn-action btn-gold';
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot'+(enPausa?' pausa':'');
+  document.getElementById('status-text').textContent = enPausa ? 'En pausa' : 'Disponible';
 }
 
-window.onload = () => {
-  // Nada por ahora
-};
+// ── HISTORIAL ─────────────────────────────────────────────────────────────────
+function renderHistorial() {
+  const el = document.getElementById('hist-list');
+  if (!historial.length) return;
+  el.innerHTML = historial.map(h=>`
+    <div class="hist-item">
+      <span class="hist-code">${h.codigo}</span>
+      <span class="hist-srv">${h.servicio||'—'}</span>
+      <span class="hist-status ${h.estado==='atendido'?'st-done':'st-absent'}">
+        ${h.estado==='atendido'?'✓ Atendido':'✗ Ausente'}
+      </span>
+    </div>`).join('');
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+  tiempoInicio=Date.now();
+  tiempoTimer=setInterval(()=>{
+    const s=Math.floor((Date.now()-tiempoInicio)/1000);
+    const m=Math.floor(s/60), ss=String(s%60).padStart(2,'0');
+    document.getElementById('ta-tiempo').textContent=`${m}:${ss}`;
+  },1000);
+}
+function stopTimer(){ clearInterval(tiempoTimer); tiempoInicio=null; }
+
+// ── BEEP ──────────────────────────────────────────────────────────────────────
+function playBeep() {
+  try {
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,.15,.3].forEach(d=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=880;
+      g.gain.setValueAtTime(.3,ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.2);
+      o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.2);
+    });
+  } catch(e){}
+}
+
+// Refrescar cola periódicamente si no hay socket
+if (!socket) setInterval(()=>{ if(moduloNum) loadCola(); },3000);
 </script>
 </body>
 </html>
