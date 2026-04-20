@@ -29,11 +29,15 @@ app.post('/api/login', (req, res) => {
 });
 
 // Rutas principales (una sola entrada)
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'login.html')));
-app.get('/asesor', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'asesor.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'admin.html')));
-app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'pages', 'pantalla.html')));
+// Rutas principales (ajustadas para archivos en la raíz)
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+app.get('/asesor', (req, res) => res.sendFile(path.join(__dirname, 'asesor.html')));
+app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'pantalla.html')));
+
+// Servir archivos estáticos desde la raíz
+app.use(express.static(__dirname));
 
 
 // ====================== ESTADO ======================
