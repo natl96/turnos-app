@@ -1,370 +1,356 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Turnos PRO</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Archivo', -apple-system, sans-serif; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    
-    :root {
-      --primary: #EC0000;
-      --primary-dark: #C00000;
-      --secondary: #0057B8;
-      --accent: #00B140;
-      --dark: #0A1428;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TurnoFlow – Sistema de Gestión de Turnos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --accent: #e63946;
+    --accent2: #2b7a78;
+    --gold: #f4a261;
+    --muted: #6b6b7b;
+    --card-bg: #ffffff;
+    --border: #e0ddd6;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-    body {
-      background: linear-gradient(135deg, var(--dark) 0%, #1A2337 100%);
-      min-height: 100vh;
-      overflow-y: auto; /* ✅ Scroll con rueda del ratón */
-    }
+  /* HEADER */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2.5rem;
+    background: rgba(245,243,238,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.4rem;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  nav a {
+    font-size: 0.85rem; font-weight: 500;
+    color: var(--muted); text-decoration: none;
+    margin-left: 2rem; transition: color .2s;
+  }
+  nav a:hover { color: var(--ink); }
 
-    .service-card {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 3px solid transparent;
-    }
-    .service-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 25px 50px -12px rgba(236, 0, 0, 0.4);
-    }
-    .service-card.active {
-      border-color: #0057B8;
-      box-shadow: 0 0 0 6px rgba(0, 87, 184, 0.3);
-    }
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 80px;
+  }
+  .hero-left {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 4rem 5rem 6rem;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .75rem; font-weight: 500; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+  .hero-tag::before {
+    content: ''; display: block;
+    width: 24px; height: 2px; background: var(--accent);
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 4vw, 4.5rem);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.7;
+    max-width: 440px; margin-bottom: 3rem;
+  }
+  .hero-right {
+    position: relative;
+    background: var(--ink);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-right::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 30%, rgba(230,57,70,.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(43,122,120,.2) 0%, transparent 50%);
+  }
+  .queue-visual {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; gap: 1rem;
+    width: 320px;
+  }
+  .ticket-card {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    animation: slideIn .6s ease forwards;
+    opacity: 0;
+  }
+  .ticket-card:nth-child(1) { animation-delay: .1s; }
+  .ticket-card:nth-child(2) { animation-delay: .25s; }
+  .ticket-card:nth-child(3) { animation-delay: .4s; }
+  .ticket-card:nth-child(4) { animation-delay: .55s; }
+  @keyframes slideIn {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .ticket-badge {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: .9rem; color: #fff;
+    flex-shrink: 0;
+  }
+  .ticket-info { flex: 1; }
+  .ticket-code {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+  }
+  .ticket-srv { font-size: .78rem; color: rgba(255,255,255,.5); margin-top: 2px; }
+  .ticket-status {
+    font-size: .72rem; padding: .3rem .7rem; border-radius: 20px;
+    font-weight: 500;
+  }
+  .badge-called { background: rgba(230,57,70,.2); color: #ff8589; }
+  .badge-waiting { background: rgba(244,162,97,.15); color: #f4a261; }
 
-    .glass {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
+  /* MÓDULOS */
+  .modules {
+    padding: 6rem 6rem 5rem;
+  }
+  .section-label {
+    font-size: .75rem; font-weight: 500; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: .75rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 3rem;
+  }
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .module-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.75rem 2rem;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+    position: relative; overflow: hidden;
+  }
+  .module-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,.1);
+    border-color: transparent;
+  }
+  .mod-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; margin-bottom: 1.5rem;
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+  }
+  .mod-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.15rem; margin-bottom: .5rem;
+  }
+  .mod-desc { font-size: .88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+  .mod-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .82rem; font-weight: 600;
+    color: var(--c);
+    border: 1.5px solid color-mix(in srgb, var(--c) 30%, transparent);
+    padding: .55rem 1.1rem; border-radius: 30px;
+    transition: background .2s, color .2s;
+    width: fit-content;
+    margin-top: auto;
+  }
+  .module-card:hover .mod-btn {
+    background: var(--c); color: #fff;
+  }
 
-    .ticket-number {
-      font-size: 5.5rem;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: -6px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+  /* STATS */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 0 6rem;
+  }
+  .stat {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.8rem; font-weight: 800; line-height: 1;
+    letter-spacing: -2px; margin-bottom: .4rem;
+  }
+  .stat-label { font-size: .85rem; color: var(--muted); }
 
-    @keyframes popIn {
-      0% { transform: scale(0.85); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-  </style>
+  footer {
+    text-align: center; padding: 2.5rem;
+    font-size: .8rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 5rem;
+  }
+
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .hero-left { padding: 5rem 2rem 3rem; }
+    .modules { padding: 4rem 2rem 3rem; }
+    .modules-grid { grid-template-columns: 1fr 1fr; }
+    .stats-bar { margin: 0 2rem; grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .modules-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    header { padding: 1rem 1.5rem; }
+    nav { display: none; }
+  }
+</style>
 </head>
-<body class="text-white">
+<body>
 
-  <!-- HEADER -->
-  <header class="glass border-b border-white/10 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-4xl shadow-inner">📋</div>
-        <div>
-          <h1 class="text-4xl font-bold tracking-tighter">Turnos PRO</h1>
-          <p class="text-blue-200 text-sm">Gestión omnicanal de turnos</p>
+<header>
+  <div class="logo">Turno<span>Flow</span></div>
+  <nav>
+    <a href="cliente.html">Solicitar turno</a>
+    <a href="pantalla.html">Pantalla de espera</a>
+    <a href="asesor.html">Asesor</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Sistema omnicanal</div>
+    <h1>Gestión de turnos <em>sin fricciones</em></h1>
+    <p class="hero-desc">Plataforma integral para organizar colas de atención, reducir tiempos de espera y brindar una experiencia fluida a cada usuario.</p>
+    <a href="cliente.html" style="display:inline-flex;align-items:center;gap:.75rem;background:var(--accent);color:#fff;text-decoration:none;padding:1rem 2rem;border-radius:50px;font-weight:600;font-size:1rem;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 30px rgba(230,57,70,.35)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      Solicitar mi turno
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="hero-right">
+    <div class="queue-visual">
+      <div class="ticket-card">
+        <div class="ticket-badge" style="background:#e63946">CAJ</div>
+        <div class="ticket-info">
+          <div class="ticket-code">CAJ-001</div>
+          <div class="ticket-srv">Caja · Módulo 2</div>
         </div>
+        <span class="ticket-status badge-called">Llamado</span>
       </div>
-
-      <!-- Cambio de idioma (REQ-09) -->
-      <div class="flex bg-white/10 rounded-3xl p-1">
-        <button onclick="switchLanguage('es')" id="lang-es" class="px-8 py-3 rounded-3xl font-semibold">🇨🇴 ES</button>
-        <button onclick="switchLanguage('en')" id="lang-en" class="px-8 py-3 rounded-3xl font-semibold">🇬🇧 EN</button>
-      </div>
-
-      <a href="../login" class="inline-flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-3xl font-semibold hover:bg-blue-50 transition-all shadow-lg">
-        <i class="fa-solid fa-right-to-bracket"></i>
-        Iniciar sesión (Asesor / Admin)
-      </a>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-8 py-12">
-    <div class="text-center mb-12">
-      <h2 class="text-5xl font-bold mb-3" id="hero-title">¿Qué servicio necesitas hoy?</h2>
-      <p class="text-xl text-blue-200" id="hero-subtitle">Selecciona y obtén tu turno en segundos</p>
-    </div>
-
-    <!-- SERVICIOS (REQ-01) -->
-    <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"></div>
-
-    <!-- PANEL GENERACIÓN -->
-    <div id="generation-panel" class="hidden glass rounded-3xl p-8 max-w-2xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-semibold" id="selected-label">Servicio seleccionado:</h3>
-        <div id="selected-service-name" class="text-3xl font-bold text-blue-400"></div>
-      </div>
-
-      <!-- Ticket impreso / digital (REQ-02) -->
-      <div class="flex gap-4 mb-8">
-        <label onclick="selectDelivery('impreso')" id="label-impreso" class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent">
-          <i class="fa-solid fa-print text-4xl text-red-400"></i>
-          <div>
-            <p class="font-semibold text-xl" id="physical-text">Ticket impreso</p>
-            <p class="text-sm text-white/70" id="physical-desc">Se imprime en el kiosco</p>
-          </div>
-        </label>
-        <label onclick="selectDelivery('digital')" id="label-digital" class="flex-1 cursor-pointer glass rounded-3xl p-6 flex items-center gap-4 border-2 border-transparent">
-          <i class="fa-solid fa-mobile-screen-button text-4xl text-emerald-400"></i>
-          <div>
-            <p class="font-semibold text-xl" id="digital-text">Ticket digital</p>
-            <p class="text-sm text-white/70" id="digital-desc">Por WhatsApp / Email</p>
-          </div>
-        </label>
-      </div>
-
-      <!-- Datos digitales (REQ-10) -->
-      <div id="digital-fields" class="hidden space-y-6">
-        <div>
-          <label class="block text-sm mb-2 text-white/70" id="phone-label">Teléfono <span class="text-red-400">*</span></label>
-          <input type="tel" id="phone" placeholder="300 123 4567" class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
+      <div class="ticket-card">
+        <div class="ticket-badge" style="background:#2b7a78">INF</div>
+        <div class="ticket-info">
+          <div class="ticket-code">INF-003</div>
+          <div class="ticket-srv">Información · En espera</div>
         </div>
-        <div>
-          <label class="block text-sm mb-2 text-white/70" id="email-label">Correo electrónico (opcional)</label>
-          <input type="email" id="email" placeholder="tu@email.com" class="w-full bg-white/10 border border-white/30 focus:border-red-400 rounded-3xl px-6 py-5 text-xl outline-none">
-        </div>
+        <span class="ticket-status badge-waiting">~10 min</span>
       </div>
-
-      <button onclick="generateTicket()" class="w-full mt-4 py-7 bg-red-600 hover:bg-red-700 text-2xl font-semibold rounded-3xl transition-all flex items-center justify-center gap-3">
-        <i class="fa-solid fa-ticket"></i>
-        <span id="generate-btn">Generar turno</span>
-      </button>
-    </div>
-  </main>
-
-  <!-- MODAL DEL TICKET (REQ-03, REQ-06, REQ-08) -->
-  <div id="ticket-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-popIn">
-      <div class="p-10 text-center" id="ticket-content"></div>
-      <div class="flex border-t border-gray-200">
-        <button onclick="cancelTicket()" class="flex-1 py-6 text-red-600 font-semibold flex items-center justify-center gap-2 hover:bg-red-50">Cancelar turno</button>
-        <button onclick="closeTicketModal()" class="flex-1 py-6 bg-red-600 text-white font-semibold flex items-center justify-center gap-2">Aceptar</button>
+      <div class="ticket-card">
+        <div class="ticket-badge" style="background:#f4a261">TRA</div>
+        <div class="ticket-info">
+          <div class="ticket-code">TRA-007</div>
+          <div class="ticket-srv">Trámites · En espera</div>
+        </div>
+        <span class="ticket-status badge-waiting">~15 min</span>
+      </div>
+      <div class="ticket-card">
+        <div class="ticket-badge" style="background:#6d6875">SOP</div>
+        <div class="ticket-info">
+          <div class="ticket-code">SOP-002</div>
+          <div class="ticket-srv">Soporte · En espera</div>
+        </div>
+        <span class="ticket-status badge-waiting">~5 min</span>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- QR MÓVIL FLOTANTE (REQ-06) -->
-  <div class="fixed bottom-8 right-8 glass rounded-3xl p-5 text-center shadow-2xl">
-    <p class="text-xs uppercase tracking-widest mb-2 text-blue-200">Escanea desde tu celular</p>
-    <div id="mobile-qr"></div>
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">4<span>+</span></div>
+    <div class="stat-label">Servicios disponibles</div>
   </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Módulos de atención</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">0<span>s</span></div>
+    <div class="stat-label">Tiempo de asignación</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">RT</div>
+    <div class="stat-label">Actualizaciones en vivo</div>
+  </div>
+</div>
 
-  <script>
-    let language = 'es';
-    let selectedService = null;
-    let selectedDeliveryType = 'impreso';
-    let currentTicket = null;
-    let inactivityTimer = null;
+<section class="modules">
+  <div class="section-label">Módulos del sistema</div>
+  <div class="section-title">Todo lo que necesitas</div>
 
-    const translations = {
-      es: {
-        heroTitle: "¿Qué servicio necesitas hoy?",
-        heroSubtitle: "Selecciona y obtén tu turno en segundos",
-        selectedLabel: "Servicio seleccionado:",
-        physicalText: "Ticket impreso",
-        physicalDesc: "Se imprime en el kiosco",
-        digitalText: "Ticket digital",
-        digitalDesc: "Por WhatsApp / Email",
-        phoneLabel: "Teléfono (obligatorio para digital)",
-        emailLabel: "Correo electrónico (opcional)",
-        generateBtn: "Generar turno",
-        ticketReady: "¡Tu turno ha sido generado!",
-        peopleAhead: "Personas delante",
-        waitTime: "Tiempo estimado",
-        minutes: "minutos",
-        date: "Fecha y hora:"
-      },
-      en: {
-        heroTitle: "What service do you need today?",
-        heroSubtitle: "Select and get your ticket in seconds",
-        selectedLabel: "Selected service:",
-        physicalText: "Printed ticket",
-        physicalDesc: "Printed at the kiosk",
-        digitalText: "Digital ticket",
-        digitalDesc: "Via WhatsApp / Email",
-        phoneLabel: "Phone (required for digital)",
-        emailLabel: "Email (optional)",
-        generateBtn: "Generate ticket",
-        ticketReady: "Your ticket is ready!",
-        peopleAhead: "People ahead",
-        waitTime: "Estimated time",
-        minutes: "minutes",
-        date: "Date & time:"
-      }
-    };
+  <div class="modules-grid">
+    <a href="cliente.html" class="module-card" style="--c:#e63946">
+      <div class="mod-icon" style="--c:#e63946">🎫</div>
+      <div class="mod-name">Módulo Cliente</div>
+      <div class="mod-desc">Solicita tu turno en segundos, elige el servicio y recibe tu ticket con código único y tiempo estimado.</div>
+      <span class="mod-btn">Solicitar turno <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+    </a>
+    <a href="asesor.html" class="module-card" style="--c:#2b7a78">
+      <div class="mod-icon" style="--c:#2b7a78">🖥️</div>
+      <div class="mod-name">Panel Asesor</div>
+      <div class="mod-desc">Gestiona la cola de atención, llama al siguiente turno, registra tiempos y agrega notas de cada caso.</div>
+      <span class="mod-btn">Ir al panel <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+    </a>
+    <a href="admin.html" class="module-card" style="--c:#f4a261">
+      <div class="mod-icon" style="--c:#f4a261">⚙️</div>
+      <div class="mod-name">Panel Admin</div>
+      <div class="mod-desc">Dashboard en tiempo real, gestión de usuarios, servicios, reportes y monitoreo de todos los módulos.</div>
+      <span class="mod-btn">Administrar <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+    </a>
+    <a href="pantalla.html" class="module-card" style="--c:#6d6875">
+      <div class="mod-icon" style="--c:#6d6875">📺</div>
+      <div class="mod-name">Pantalla de Espera</div>
+      <div class="mod-desc">Visualización pública con los últimos turnos llamados, alertas sonoras y estado de cada módulo.</div>
+      <span class="mod-btn">Ver pantalla <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+    </a>
+  </div>
+</section>
 
-    function translatePage() {
-      document.getElementById('hero-title').textContent = translations[language].heroTitle;
-      document.getElementById('hero-subtitle').textContent = translations[language].heroSubtitle;
-      document.getElementById('selected-label').textContent = translations[language].selectedLabel;
-      document.getElementById('physical-text').textContent = translations[language].physicalText;
-      document.getElementById('physical-desc').textContent = translations[language].physicalDesc;
-      document.getElementById('digital-text').textContent = translations[language].digitalText;
-      document.getElementById('digital-desc').textContent = translations[language].digitalDesc;
-      document.getElementById('phone-label').textContent = translations[language].phoneLabel;
-      document.getElementById('email-label').textContent = translations[language].emailLabel;
-      document.getElementById('generate-btn').textContent = translations[language].generateBtn;
-    }
+<footer>
+  TurnoFlow &copy; 2026 · Sistema de Gestión de Turnos Omnicanal · Ingeniería de Software
+</footer>
 
-    function switchLanguage(lang) {
-      language = lang;
-      document.getElementById('lang-es').classList.toggle('bg-white', lang === 'es');
-      document.getElementById('lang-es').classList.toggle('text-blue-700', lang === 'es');
-      document.getElementById('lang-en').classList.toggle('bg-white', lang === 'en');
-      document.getElementById('lang-en').classList.toggle('text-blue-700', lang === 'en');
-      translatePage();
-    }
-
-    async function loadServices() {
-      try {
-        const res = await fetch('/api/estado');
-        const data = await res.json();
-        const grid = document.getElementById('services-grid');
-        grid.innerHTML = data.services.filter(s => s.active).map(s => `
-          <div onclick="selectService('${s.id}', '${s.name}', '${s.color}')" 
-               class="service-card bg-white text-gray-900 rounded-3xl p-8 cursor-pointer text-center">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-6xl" style="background: #FF69B4; color: white;">📌</div>
-            <h3 class="text-2xl font-bold mb-1">${s.name}</h3>
-            <p class="text-gray-500">${s.estimatedMinutes} min aprox.</p>
-          </div>
-        `).join('');
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function selectService(id, name, color) {
-      selectedService = { id, name, color };
-      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-      document.getElementById('generation-panel').classList.remove('hidden');
-      document.getElementById('selected-service-name').innerHTML = `<span style="color:${color}">${name}</span>`;
-      selectDelivery('impreso');
-      resetInactivityTimer();
-    }
-
-    function selectDelivery(type) {
-      selectedDeliveryType = type;
-      document.getElementById('label-impreso').classList.toggle('border-red-500', type === 'impreso');
-      document.getElementById('label-digital').classList.toggle('border-red-500', type === 'digital');
-      document.getElementById('digital-fields').classList.toggle('hidden', type !== 'digital');
-    }
-
-    async function generateTicket() {
-      if (!selectedService) return alert('Selecciona un servicio');
-
-      const isDigital = selectedDeliveryType === 'digital';
-      const phone = document.getElementById('phone').value.trim();
-      const email = document.getElementById('email').value.trim();
-
-      if (isDigital && (!phone || !/^\+?[\d\s-]{8,15}$/.test(phone))) {
-        return alert(language === 'es' ? 'Ingresa un teléfono válido' : 'Enter a valid phone');
-      }
-
-      try {
-        const res = await fetch('/api/turnos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            serviceId: selectedService.id,
-            channel: 'kiosco',
-            deliveryType: selectedDeliveryType,
-            phone: isDigital ? phone : '',
-            email: isDigital ? email : '',
-            language: language
-          })
-        });
-
-        const result = await res.json();
-
-        if (result.success && result.ticket) {
-          currentTicket = result.ticket;
-          showTicketModal(result.ticket);
-        } else {
-          alert(result.message || 'No se pudo generar el ticket');
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Error de conexión');
-      }
-    }
-
-    function showTicketModal(ticket) {
-      const content = document.getElementById('ticket-content');
-      const t = translations[language];
-
-      const qrCanvas = document.createElement('canvas');
-      QRCode.toCanvas(qrCanvas, ticket.id, { width: 220, margin: 2 });
-
-      content.innerHTML = `
-        <div class="text-center">
-          <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-6 py-2 rounded-3xl mb-6 text-lg font-semibold">
-            <i class="fa-solid fa-check-circle"></i> ${t.ticketReady}
-          </div>
-          <div class="ticket-number mono">${ticket.id}</div>
-          <p class="text-3xl font-semibold mt-4 mb-8">${selectedService.name}</p>
-          <div class="grid grid-cols-2 gap-6 mb-10">
-            <div class="bg-gray-100 rounded-3xl p-6">
-              <p class="text-sm text-gray-500">${t.peopleAhead}</p>
-              <p class="text-5xl font-bold text-blue-700">${ticket.peopleAhead}</p>
-            </div>
-            <div class="bg-gray-100 rounded-3xl p-6">
-              <p class="text-sm text-gray-500">${t.waitTime}</p>
-              <p class="text-5xl font-bold text-red-600">${ticket.estimatedWaitMinutes} ${t.minutes}</p>
-            </div>
-          </div>
-          <div class="mb-8">
-            <p class="text-sm text-gray-500 mb-2">${t.date}</p>
-            <p class="font-mono text-xl">${new Date(ticket.queueEnteredAt).toLocaleString(language === 'es' ? 'es-CO' : 'en-US')}</p>
-          </div>
-          <div class="flex justify-center">${qrCanvas.outerHTML}</div>
-        </div>
-      `;
-
-      document.getElementById('ticket-modal').classList.remove('hidden');
-      resetInactivityTimer();
-    }
-
-    async function cancelTicket() {
-      if (!currentTicket) return;
-      if (!confirm(language === 'es' ? '¿Cancelar este turno?' : 'Cancel ticket?')) return;
-      await fetch(`/api/turnos/${currentTicket.id}/cancelar`, { method: 'POST' });
-      closeTicketModal();
-    }
-
-    function closeTicketModal() {
-      document.getElementById('ticket-modal').classList.add('hidden');
-      currentTicket = null;
-      document.getElementById('generation-panel').classList.add('hidden');
-      selectedService = null;
-      loadServices();
-    }
-
-    function resetInactivityTimer() {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => window.location.reload(), 15000);
-    }
-
-    function createMobileQR() {
-      const container = document.getElementById('mobile-qr');
-      QRCode.toCanvas(container, window.location.origin, { width: 160 });
-    }
-
-    window.onload = () => {
-      loadServices();
-      createMobileQR();
-      translatePage();
-      resetInactivityTimer();
-      document.addEventListener('click', resetInactivityTimer);
-    };
-  </script>
 </body>
 </html>
