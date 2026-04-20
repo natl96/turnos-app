@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitar Turno – TurnoFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --accent: #e63946;
+    --accent2: #2b7a78;
+    --muted: #6b6b7b;
+    --border: #e0ddd6;
+    --card: #ffffff;
+    --radius: 20px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { 
+    font-family: 'DM Sans', sans-serif; 
+    background: var(--paper); 
+    color: var(--ink); 
+    min-height: 100vh; 
+  }
+
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .9rem 2rem;
+    background: rgba(245,243,238,.95); 
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { 
+    font-family:'Syne',sans-serif; 
+    font-weight:800; 
+    font-size:1.25rem; 
+    text-decoration:none; 
+    color:var(--ink); 
+  }
+  .logo span { color:var(--accent); }
+
+  .wrapper {
+    max-width: 680px; 
+    margin: 0 auto;
+    padding: 110px 2rem 4rem;
+  }
+
+  .steps {
+    display:flex; align-items:center; gap:0;
+    margin-bottom: 2.5rem;
+  }
+  .step {
+    display:flex; align-items:center; gap:.6rem;
+    font-size:.82rem; font-weight:500; color:var(--muted);
+  }
+  .step.active { color:var(--accent); }
+  .step.done { color:var(--accent2); }
+  .step-dot {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.75rem; font-weight:700;
+    background:var(--border); color:var(--muted);
+    flex-shrink:0;
+  }
+  .step.active .step-dot { background:var(--accent); color:#fff; }
+  .step.done .step-dot { background:var(--accent2); color:#fff; }
+  .step-line { flex:1; height:1px; background:var(--border); min-width:30px; }
+
+  .screen { display:none; }
+  .screen.active { display:block; animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .screen-title {
+    font-family:'Syne',sans-serif; 
+    font-size:1.9rem; 
+    font-weight:800;
+    letter-spacing:-1px; 
+    margin-bottom:.5rem;
+  }
+  .screen-sub { 
+    color:var(--muted); 
+    font-size:.95rem; 
+    margin-bottom:2rem; 
+  }
+
+  .services-grid {
+    display:grid; 
+    grid-template-columns:1fr 1fr; 
+    gap:1rem;
+  }
+  .srv-card {
+    background:var(--card); 
+    border:2px solid var(--border); 
+    border-radius:var(--radius);
+    padding:1.5rem; 
+    cursor:pointer; 
+    transition:all .2s;
+    display:flex; 
+    flex-direction:column; 
+    gap:.5rem;
+  }
+  .srv-card:hover { 
+    border-color:var(--accent); 
+    transform:translateY(-3px); 
+    box-shadow:0 10px 25px rgba(0,0,0,.08); 
+  }
+  .srv-card.selected { 
+    border-color:var(--accent); 
+    background:rgba(230,57,70,.04); 
+  }
+  .srv-name { 
+    font-family:'Syne',sans-serif; 
+    font-weight:700; 
+    font-size:1.05rem; 
+  }
+
+  .form-group { margin-bottom:1.25rem; }
+  label { 
+    display:block; 
+    font-size:.85rem; 
+    font-weight:600; 
+    margin-bottom:.4rem; 
+  }
+  input, select {
+    width:100%; 
+    padding:.85rem 1rem;
+    border:2px solid var(--border); 
+    border-radius:12px;
+    font-family:'DM Sans',sans-serif; 
+    font-size:.95rem;
+    background:#fff; 
+    color:var(--ink);
+    outline:none;
+  }
+  input:focus, select:focus {
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(230,57,70,.12);
+  }
+
+  .btn {
+    display:inline-flex; 
+    align-items:center; 
+    justify-content:center; 
+    gap:.6rem;
+    font-family:'DM Sans',sans-serif; 
+    font-size:.95rem; 
+    font-weight:600;
+    padding:.9rem 2rem; 
+    border-radius:50px; 
+    border:none; 
+    cursor:pointer;
+    width:100%;
+  }
+  .btn-primary { 
+    background:var(--accent); 
+    color:#fff; 
+  }
+  .btn-primary:hover { 
+    background:#c1121f; 
+    transform:translateY(-2px); 
+  }
+  .btn-secondary { 
+    background:var(--border); 
+    color:var(--ink); 
+  }
+
+  .ticket {
+    background:var(--card);
+    border-radius:24px;
+    width:100%; 
+    max-width:400px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.12);
+  }
+  .ticket-header {
+    background:var(--ink); 
+    color:#fff;
+    padding:1.75rem 2rem 1.5rem;
+    text-align:center;
+  }
+  .ticket-num {
+    font-family:'Syne',sans-serif; 
+    font-size:4rem; 
+    font-weight:800;
+    line-height:1; 
+    letter-spacing:-3px;
+    color:#fff;
+  }
+  .ticket-body { 
+    padding:2.5rem 2rem 2rem; 
+  }
+  .ticket-row {
+    display:flex; 
+    justify-content:space-between; 
+    padding:.75rem 0; 
+    border-bottom:1px dashed var(--border);
+  }
+  .ticket-qr {
+    padding:1.5rem 2rem;
+    border-top:1px dashed var(--border);
+    display:flex; 
+    justify-content:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">Turno<span>Flow</span></a>
+</header>
+
+<div class="wrapper">
+
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-dot">1</div> Servicio</div>
+    <div class="step-line"></div>
+    <div class="step" id="step2"><div class="step-dot">2</div> Datos</div>
+    <div class="step-line"></div>
+    <div class="step" id="step3"><div class="step-dot">3</div> Tu ticket</div>
+  </div>
+
+  <!-- SCREEN 1: SERVICIOS -->
+  <div class="screen active" id="screen-services">
+    <div class="screen-title">¿Qué servicio necesitas?</div>
+    <p class="screen-sub">Selecciona el tipo de atención para generar tu turno.</p>
+    <div class="services-grid" id="services-grid"></div>
+    <button class="btn btn-primary" id="btn-next-1" disabled onclick="goToStep2()">Continuar</button>
+  </div>
+
+  <!-- SCREEN 2: DATOS -->
+  <div class="screen" id="screen-form">
+    <div class="screen-title">Tus datos</div>
+    <p class="screen-sub">Opcional: ingresa teléfono o correo para recibir notificaciones.</p>
+    <div class="form-group">
+      <label>Nombre completo <span style="color:#999">(opcional)</span></label>
+      <input type="text" id="inp-nombre" placeholder="María García">
+    </div>
+    <div class="form-group">
+      <label>Teléfono <span style="color:#999">(opcional)</span></label>
+      <input type="tel" id="inp-tel" placeholder="3001234567">
+    </div>
+    <div class="form-group">
+      <label>Correo electrónico <span style="color:#999">(opcional)</span></label>
+      <input type="email" id="inp-email" placeholder="tu@email.com">
+    </div>
+    <div style="display:flex;gap:1rem">
+      <button class="btn btn-secondary" onclick="goToStep1()">Atrás</button>
+      <button class="btn btn-primary" onclick="solicitarTurno()">Generar mi ticket</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: TICKET -->
+  <div class="screen" id="screen-ticket">
+    <div class="screen-title">¡Tu turno está listo!</div>
+    <p class="screen-sub">Guarda este ticket. Te avisaremos cuando sea tu turno.</p>
+    
+    <div class="ticket" id="ticket-el">
+      <div class="ticket-header">
+        <div style="font-size:0.75rem;opacity:0.7">TurnoFlow</div>
+        <div class="ticket-num" id="t-codigo">---</div>
+        <div id="t-servicio" style="margin-top:8px;opacity:0.8">Servicio</div>
+      </div>
+      <div class="ticket-body">
+        <div class="ticket-row"><span>Fecha</span><span id="t-fecha">-</span></div>
+        <div class="ticket-row"><span>Hora</span><span id="t-hora">-</span></div>
+        <div class="ticket-row"><span>Personas antes</span><span id="t-pos">-</span></div>
+        <div class="ticket-row"><span>Tiempo estimado</span><span id="t-espera">-</span></div>
+      </div>
+      <div class="ticket-qr">
+        <div id="qr-code"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;max-width:400px;margin:2rem auto 0">
+      <button class="btn btn-secondary" onclick="nuevoTurno()">Nuevo turno</button>
+      <button class="btn btn-primary" onclick="cancelarTurnoActual()">Cancelar turno</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = window.location.origin;
+let selectedService = null;
+let currentTurno = null;
+
+async function loadServices() {
+  try {
+    const res = await fetch('/api/estado');
+    const data = await res.json();
+    const grid = document.getElementById('services-grid');
+    grid.innerHTML = data.services.filter(s => s.active).map(s => `
+      <div class="srv-card" onclick="selectService('${s.id}', '${s.name}')">
+        <div class="srv-name">${s.name}</div>
+        <div style="font-size:0.85rem;color:#888">${s.estimatedMinutes} min aprox.</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function selectService(id, name) {
+  selectedService = id;
+  document.querySelectorAll('.srv-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('btn-next-1').disabled = false;
+}
+
+function goToStep1() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-services').classList.add('active');
+}
+
+function goToStep2() {
+  if (!selectedService) return;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-form').classList.add('active');
+}
+
+async function solicitarTurno() {
+  if (!selectedService) return;
+
+  const nombre = document.getElementById('inp-nombre').value.trim();
+  const telefono = document.getElementById('inp-tel').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+
+  try {
+    const res = await fetch('/api/turnos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serviceId: selectedService,
+        channel: 'web',
+        deliveryType: (telefono || email) ? 'digital' : 'impreso',
+        nombre: nombre,
+        phone: telefono,
+        email: email
+      })
+    });
+
+    const result = await res.json();
+
+    if (result.success && result.ticket) {
+      currentTurno = result.ticket;
+      renderTicket(result.ticket);
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-ticket').classList.add('active');
+      generarQR(result.ticket.id);
+    } else {
+      alert(result.message || 'No se pudo generar el ticket');
+    }
+  } catch (e) {
+    alert('Error de conexión. Intenta nuevamente.');
+  }
+}
+
+function renderTicket(ticket) {
+  document.getElementById('t-codigo').textContent = ticket.id;
+  document.getElementById('t-servicio').textContent = ticket.serviceName || 'Servicio seleccionado';
+  document.getElementById('t-fecha').textContent = new Date().toLocaleDateString('es-CO');
+  document.getElementById('t-hora').textContent = new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('t-pos').textContent = ticket.peopleAhead || '0';
+  document.getElementById('t-espera').textContent = `${ticket.estimatedWaitMinutes || 0} minutos`;
+}
+
+function generarQR(id) {
+  document.getElementById('qr-code').innerHTML = '';
+  new QRCode(document.getElementById('qr-code'), {
+    text: id,
+    width: 180,
+    height: 180,
+    colorDark: "#0a0a0f",
+    colorLight: "#ffffff"
+  });
+}
+
+async function cancelarTurnoActual() {
+  if (!currentTurno) return;
+  if (!confirm('¿Cancelar este turno?')) return;
+  await fetch(`/api/turnos/${currentTurno.id}/cancelar`, { method: 'POST' });
+  alert('Turno cancelado');
+  nuevoTurno();
+}
+
+function nuevoTurno() {
+  currentTurno = null;
+  selectedService = null;
+  document.getElementById('inp-nombre').value = '';
+  document.getElementById('inp-tel').value = '';
+  document.getElementById('inp-email').value = '';
+  document.getElementById('btn-next-1').disabled = true;
+  loadServices();
+  goToStep1();
+}
+
+window.onload = loadServices;
+</script>
+</body>
+</html>
