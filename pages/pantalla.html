@@ -382,6 +382,14 @@ socket.on('turno-llamado', data => {
   playChime();
 });
 
+// Cuando un turno es finalizado, quitarlo de la pantalla
+socket.on('turno-finalizado', data => {
+  if (data.turnoId) {
+    llamados = llamados.filter(l => l.id !== data.turnoId);
+    renderLlamados(llamados);
+  }
+});
+
 // Carga inicial
 fetch('/api/estado')
   .then(r => r.json())
@@ -394,3 +402,4 @@ fetch('/api/estado')
 </script>
 </body>
 </html>
+
