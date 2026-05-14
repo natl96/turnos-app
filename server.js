@@ -2,10 +2,10 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
-
+ 
 const app = express();
 const server = http.createServer(app);
-
+ 
 // ── Socket.IO ────────────────────────────────────────────────────────────────
 let io;
 try {
@@ -17,15 +17,15 @@ try {
   console.warn('⚠️  Socket.IO no instalado. Tiempo real desactivado. Ejecuta: npm install socket.io');
   io = { emit: () => {} };
 }
-
+ 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
-
+ 
 app.use(express.json());
 // Servir archivos estáticos desde public/ (nuevo) y pages/ (compatibilidad)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/pages', express.static(path.join(__dirname, 'pages')));
-
+ 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
 let services = [];
 let queue = [];
@@ -46,7 +46,7 @@ let adminUsers = [
 let ultimosLlamados = [];
 let ticketCounter = 1;
 let lastResetDate = new Date().toDateString();
-
+ 
 // ── PERSISTENCIA ──────────────────────────────────────────────────────────────
 function loadState() {
   if (fs.existsSync(DATA_FILE)) {
@@ -71,7 +71,7 @@ function loadState() {
     resetToDefaults();
   }
 }
-
+ 
 function saveState() {
   if (history.length > 2000) history = history.slice(-2000);
   try {
@@ -83,7 +83,7 @@ function saveState() {
     console.error('❌ Error al guardar estado:', err.message);
   }
 }
-
+ 
 function resetToDefaults() {
   services = createDefaultServices();
   queue = []; currentTicket = null; recentCalls = []; history = [];
@@ -93,7 +93,7 @@ function resetToDefaults() {
   ticketCounter = 1;
   lastResetDate = new Date().toDateString();
 }
-
+ 
 // ── AUXILIARES ────────────────────────────────────────────────────────────────
 function createDefaultServices() {
   return [
@@ -206,7 +206,7 @@ function finalizeCurrentTicket(status, notes='') {
   const done={...currentTicket}; currentTicket=null;
   return done;
 }
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  RUTAS PÁGINAS
 // ══════════════════════════════════════════════════════════════════════════════
@@ -215,14 +215,14 @@ app.get('/cliente',  (req,res)=>res.sendFile(path.join(__dirname,'pages','client
 app.get('/asesor',   (req,res)=>res.sendFile(path.join(__dirname,'pages','asesor.html')));
 app.get('/admin',    (req,res)=>res.sendFile(path.join(__dirname,'pages','admin.html')));
 app.get('/pantalla', (req,res)=>res.sendFile(path.join(__dirname,'pages','pantalla.html')));
-
+ 
 // Compatibilidad con rutas antiguas /pages/
 app.get('/pages/index.html',    (req,res)=>res.redirect('/'));
 app.get('/pages/cliente.html',  (req,res)=>res.redirect('/cliente'));
 app.get('/pages/asesor.html',   (req,res)=>res.redirect('/asesor'));
 app.get('/pages/admin.html',    (req,res)=>res.redirect('/admin'));
 app.get('/pages/pantalla.html', (req,res)=>res.redirect('/pantalla'));
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  API ESTADO (ruta original)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -233,7 +233,7 @@ app.get('/api/pantalla', (req,res)=>res.json({
     nombre:s.name, enEspera: queue.filter(t=>t.serviceId===s.id).length
   }))
 }));
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  API SERVICIOS
 // ══════════════════════════════════════════════════════════════════════════════
@@ -275,21 +275,21 @@ app.delete('/api/servicios/:id', (req,res)=>{
   saveState(); emitEstado();
   res.json({success:true,ok:true});
 });
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  API TURNOS (clientes)
 // ══════════════════════════════════════════════════════════════════════════════
-
+ 
 // Crear turno — soporta tanto serviceId (original) como servicioId (nuevo)
 app.post('/api/turnos', (req,res)=>{
   const sid = req.body.serviceId || req.body.servicioId;
   const service = services.find(s=>s.id===sid);
   if (!service||!service.active)
     return res.status(400).json({success:false,message:'Selecciona un servicio válido.',error:'Servicio no encontrado'});
-
+ 
   const today = new Date().toDateString();
   if (today!==lastResetDate){ticketCounter=1;lastResetDate=today;}
-
+ 
   const deliveryType = req.body.deliveryType==='digital'?'digital':'impreso';
   const ticket = {
     id: createTicketCode(service),
@@ -315,12 +315,12 @@ app.post('/api/turnos', (req,res)=>{
   res.status(201).json({success:true, ok:true, ticket: publicTicket(ticket),
     turno: publicTicket(ticket) });
 });
-
+ 
 // Alias nuevo
 app.post('/api/turno', (req,res,next)=>{
   req.url='/api/turnos'; next();
 });
-
+ 
 // Obtener turno por id
 app.get('/api/turno/:id', (req,res)=>{
   const id=req.params.id;
@@ -328,7 +328,7 @@ app.get('/api/turno/:id', (req,res)=>{
   if (!t) return res.status(404).json({error:'No encontrado'});
   res.json(publicTicket(t));
 });
-
+ 
 // Cancelar turno
 app.post('/api/turnos/:id/cancelar', (req,res)=>{
   const idx=queue.findIndex(t=>t.id===req.params.id);
@@ -342,16 +342,16 @@ app.post('/api/turnos/:id/cancelar', (req,res)=>{
 app.post('/api/turno/:id/cancelar', (req,res,next)=>{
   req.url=`/api/turnos/${req.params.id}/cancelar`; next();
 });
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  API ASESOR
 // ══════════════════════════════════════════════════════════════════════════════
-
+ 
 // Login asesor — soporta el formato original (moduleNumber) y nuevo (modulo+password)
 app.post('/api/asesor/login', (req,res)=>{
   const modulo = clamp(req.body.modulo||req.body.moduleNumber,12);
   if (!modulo) return res.status(400).json({success:false,ok:false,error:'Ingresa el número de módulo.'});
-
+ 
   // Validación con contraseña (nuevo)
   if (req.body.password) {
     const a=asesores.find(x=>x.modulo===modulo&&x.password===req.body.password);
@@ -361,14 +361,14 @@ app.post('/api/asesor/login', (req,res)=>{
     saveState(); emitEstado();
     return res.json({success:true,ok:true,advisor,asesor:{id:a.id,nombre:a.nombre,modulo}});
   }
-
+ 
   // Validación sin contraseña (original — solo módulo)
   advisor.loggedIn=true; advisor.moduleNumber=modulo; advisor.paused=false;
   modulos[modulo]={asesorNombre:'Asesor '+modulo,estado:'disponible',turnoActual:null};
   saveState(); emitEstado();
   res.json({success:true,ok:true,advisor,asesor:{nombre:'Asesor '+modulo,modulo}});
 });
-
+ 
 // Pausa
 app.post('/api/asesor/pausa', (req,res)=>{
   const modulo=clamp(req.body.modulo||advisor.moduleNumber,12);
@@ -382,7 +382,7 @@ app.post('/api/asesor/pausa', (req,res)=>{
   saveState(); emitEstado();
   res.json({success:true,ok:true,advisor});
 });
-
+ 
 // Llamar siguiente turno
 app.post('/api/asesor/llamar', (req,res)=>{
   if (!advisor.loggedIn&&!req.body.modulo)
@@ -391,31 +391,31 @@ app.post('/api/asesor/llamar', (req,res)=>{
     return res.status(400).json({success:false,ok:false,error:'El módulo está en pausa.'});
   if (currentTicket)
     return res.status(400).json({success:false,ok:false,error:'Finaliza el turno actual primero.'});
-
+ 
   const sid=req.body.servicioId||req.body.serviceId;
   const idx=sid ? queue.findIndex(t=>t.serviceId===sid) : queue.findIndex(t=>advisor.serviceIds.includes(t.serviceId));
   if (idx===-1)
     return res.status(404).json({success:false,ok:false,error:'No hay turnos en espera.'});
-
+ 
   const [ticket]=queue.splice(idx,1);
   ticket.status='En atencion'; ticket.callCount=1;
   ticket.calledAt=nowIso(); ticket.attentionStartedAt=ticket.calledAt;
   ticket.moduleNumber=req.body.modulo||advisor.moduleNumber;
   currentTicket=ticket;
-
+ 
   const mod=ticket.moduleNumber;
   if (modulos[mod]) { modulos[mod].estado='ocupado'; modulos[mod].turnoActual=ticket.id; }
-
+ 
   registerCall(ticket,'Llamado');
   saveState();
   io.emit('turno-llamado',{turno:publicTicket(ticket),modulo:mod});
   emitEstado();
   res.json({success:true,ok:true,turno:publicTicket(ticket)});
 });
-
+ 
 // Alias original
 app.post('/api/llamar', (req,res,next)=>{ req.url='/api/asesor/llamar'; next(); });
-
+ 
 // Rellamar
 app.post('/api/asesor/rellamar', (req,res)=>{
   if (!currentTicket) return res.status(400).json({success:false,ok:false,error:'No hay turno activo.'});
@@ -428,32 +428,39 @@ app.post('/api/asesor/rellamar', (req,res)=>{
   res.json({success:true,ok:true,turno:publicTicket(currentTicket)});
 });
 app.post('/api/rellamar', (req,res,next)=>{ req.url='/api/asesor/rellamar'; next(); });
-
+ 
 // Ausente
 app.post('/api/asesor/ausente', (req,res)=>{
   if (!currentTicket) return res.status(400).json({success:false,ok:false,error:'No hay turno activo.'});
   const mod=req.body.modulo||currentTicket.moduleNumber||advisor.moduleNumber;
   if (modulos[mod]) { modulos[mod].estado='disponible'; modulos[mod].turnoActual=null; }
   const t=finalizeCurrentTicket('Ausente');
-  saveState(); emitEstado();
+  if (t) ultimosLlamados=ultimosLlamados.filter(u=>u.codigo!==t.id);
+  saveState();
+  io.emit('turno-finalizado', { turnoId: t ? t.id : null });
+  emitEstado();
   res.json({success:true,ok:true,turno:publicTicket(t)});
 });
 app.post('/api/ausencia', (req,res,next)=>{ req.url='/api/asesor/ausente'; next(); });
-
+ 
 // Finalizar
 app.post('/api/asesor/finalizar', (req,res)=>{
   if (!currentTicket) return res.status(400).json({success:false,ok:false,error:'No hay turno activo.'});
   const mod=req.body.modulo||currentTicket.moduleNumber||advisor.moduleNumber;
   if (modulos[mod]) { modulos[mod].estado='disponible'; modulos[mod].turnoActual=null; }
   const t=finalizeCurrentTicket('Finalizado',req.body.notes||req.body.notas);
-  saveState(); emitEstado();
+  // Quitar el turno finalizado de ultimosLlamados para que desaparezca de la pantalla
+  if (t) ultimosLlamados=ultimosLlamados.filter(u=>u.codigo!==t.id);
+  saveState();
+  io.emit('turno-finalizado', { turnoId: t ? t.id : null });
+  emitEstado();
   res.json({success:true,ok:true,turno:publicTicket(t)});
 });
 app.post('/api/finalizar', (req,res,next)=>{ req.url='/api/asesor/finalizar'; next(); });
-
+ 
 // Cola asesor
 app.get('/api/asesor/cola', (req,res)=>res.json(queue.map(publicTicket)));
-
+ 
 // Seleccionar servicios del asesor (original)
 app.post('/api/asesor/servicios', (req,res)=>{
   const ids=Array.isArray(req.body.serviceIds)?req.body.serviceIds:[];
@@ -462,7 +469,7 @@ app.post('/api/asesor/servicios', (req,res)=>{
   advisor.serviceIds=valid; saveState();
   res.json({success:true,advisor});
 });
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  API ADMIN
 // ══════════════════════════════════════════════════════════════════════════════
@@ -471,18 +478,18 @@ app.post('/api/admin/login', (req,res)=>{
   if (!u) return res.status(401).json({success:false,ok:false,error:'Credenciales incorrectas'});
   res.json({success:true,ok:true,usuario:{id:u.id,nombre:u.nombre,email:u.email,rol:u.rol}});
 });
-
+ 
 app.get('/api/admin/dashboard', (req,res)=>res.json(buildStatePayload()));
-
+ 
 app.get('/api/admin/turnos', (req,res)=>{
   const all=[...history,...queue];
   if (currentTicket) all.push(currentTicket);
   res.json(all.sort((a,b)=>new Date(b.queueEnteredAt)-new Date(a.queueEnteredAt))
     .slice(0,100).map(publicTicket));
 });
-
+ 
 app.get('/api/admin/servicios', (req,res)=>res.json(services));
-
+ 
 app.get('/api/admin/usuarios', (req,res)=>res.json(adminUsers.map(u=>({...u,password:undefined}))));
 app.post('/api/admin/usuarios', (req,res)=>{
   const u={id:'u'+Date.now(),...req.body};
@@ -493,7 +500,7 @@ app.delete('/api/admin/usuarios/:id', (req,res)=>{
   adminUsers=adminUsers.filter(u=>u.id!==req.params.id);
   res.json({ok:true});
 });
-
+ 
 // Mensajes de espera
 app.post('/api/mensajes', (req,res)=>{
   const msgs=Array.isArray(req.body.messages)?req.body.messages.map(m=>clamp(m,140)).filter(Boolean):[];
@@ -501,7 +508,7 @@ app.post('/api/mensajes', (req,res)=>{
   waitMessages=msgs; saveState();
   res.json({success:true,waitMessages});
 });
-
+ 
 // Reporte CSV
 app.get('/api/reportes.csv', (req,res)=>{
   const headers=['Codigo','Servicio','Estado','Canal','Modulo','Ingreso','Llamado','Finalizado','Espera(min)','Atencion(min)','Notas'];
@@ -515,7 +522,7 @@ app.get('/api/reportes.csv', (req,res)=>{
   res.setHeader('Content-Disposition','attachment; filename="reporte-turnos.csv"');
   res.send('\ufeff'+csv);
 });
-
+ 
 // Login genérico antiguo
 app.post('/api/login', (req,res)=>{
   const{username,password}=req.body;
@@ -523,7 +530,7 @@ app.post('/api/login', (req,res)=>{
   if (username==='asesor01'&&password==='1234')  return res.json({success:true,redirect:'/asesor'});
   res.status(401).json({success:false,message:'Usuario o contraseña incorrectos'});
 });
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  ERROR HANDLER
 // ══════════════════════════════════════════════════════════════════════════════
@@ -531,7 +538,7 @@ app.use((err,req,res,next)=>{
   console.error('Error interno:',err);
   res.status(500).json({success:false,message:'Error interno del servidor.'});
 });
-
+ 
 // ══════════════════════════════════════════════════════════════════════════════
 //  INICIO
 // ══════════════════════════════════════════════════════════════════════════════
