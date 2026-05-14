@@ -446,7 +446,11 @@ app.post('/api/asesor/finalizar', (req,res)=>{
   const mod=req.body.modulo||currentTicket.moduleNumber||advisor.moduleNumber;
   if (modulos[mod]) { modulos[mod].estado='disponible'; modulos[mod].turnoActual=null; }
   const t=finalizeCurrentTicket('Finalizado',req.body.notes||req.body.notas);
-  saveState(); emitEstado();
+  // Quitar el turno finalizado de ultimosLlamados para que desaparezca de la pantalla
+  if (t) ultimosLlamados=ultimosLlamados.filter(u=>u.codigo!==t.id);
+  saveState();
+  io.emit('turno-finalizado', { turnoId: t ? t.id : null });
+  emitEstado();
   res.json({success:true,ok:true,turno:publicTicket(t)});
 });
 app.post('/api/finalizar', (req,res,next)=>{ req.url='/api/asesor/finalizar'; next(); });
