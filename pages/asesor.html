@@ -246,9 +246,11 @@ async function login() {
     if (!data.ok && !data.success) throw new Error(data.error||data.message||'Error al ingresar');
     moduloNum = modulo;
     document.getElementById('show-modulo').textContent = modulo;
-    document.getElementById('show-asesor').textContent = data.asesor?.nombre || data.advisor?.moduleNumber ? `Asesor ${modulo}` : `Asesor ${modulo}`;
+    document.getElementById('show-asesor').textContent = data.asesor?.nombre || `Asesor ${modulo}`;
     document.getElementById('login-wrapper').style.display = 'none';
     document.getElementById('panel').classList.add('show');
+    // Recuperar turno activo si el servidor ya tenía uno en curso para este módulo
+    await recuperarTurnoActivo();
     loadCola();
   } catch(e) {
     showErr(e.message||'Error al ingresar');
@@ -258,6 +260,22 @@ function showErr(msg) {
   const el = document.getElementById('login-error');
   el.style.display='block'; el.textContent=msg;
 }
+
+// ── RECUPERAR TURNO ACTIVO AL RECARGAR ────────────────────────────────────────
+async function recuperarTurnoActivo() {
+  try {
+    const r = await fetch(`${API}/api/estado`);
+    const data = await r.json();
+    const turno = data.turnoActual;
+    // Solo restaurar si el turno activo es del módulo que acaba de iniciar sesión
+    if (turno && (turno.moduleNumber === moduloNum || turno.modulo === moduloNum)) {
+      turnoActual = turno;
+      showTurnoActual(turno);
+      startTimer(turno.attentionStartedAt || turno.calledAt);
+    }
+  } catch(e) {}
+}
+
 function logout() {
   if (!confirm('¿Cerrar sesión?')) return;
   document.getElementById('panel').classList.remove('show');
@@ -407,8 +425,10 @@ function renderHistorial() {
 }
 
 // ── TIMER ─────────────────────────────────────────────────────────────────────
-function startTimer() {
-  tiempoInicio=Date.now();
+function startTimer(desdeIso) {
+  // Si viene una hora ISO del servidor (recuperación de sesión), usarla; si no, empezar ahora
+  tiempoInicio = desdeIso ? new Date(desdeIso).getTime() : Date.now();
+  clearInterval(tiempoTimer);
   tiempoTimer=setInterval(()=>{
     const s=Math.floor((Date.now()-tiempoInicio)/1000);
     const m=Math.floor(s/60), ss=String(s%60).padStart(2,'0');
